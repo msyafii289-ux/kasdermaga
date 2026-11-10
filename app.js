@@ -1,42 +1,131 @@
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const money=n=>'Rp '+Number(n||0).toLocaleString('id-ID');
-const today=()=>new Date().toISOString().slice(0,10);
-// Data contoh hanya untuk pratinjau desain. Hapus/ganti saat mulai memakai kas sebenarnya.
-const demoTransactions=[
- {id:'demo1',date:'2026-10-30',type:'Pemasukan',category:'Tarif penyeberangan',note:'Tarif penyeberangan',amount:150000,recordedBy:'Admin'},
- {id:'demo2',date:'2026-10-30',type:'Pemasukan',category:'Tarif penyeberangan',note:'Tarif penyeberangan',amount:200000,recordedBy:'Admin'},
- {id:'demo3',date:'2026-10-29',type:'Pengeluaran',category:'Pembelian BBM',note:'Beli solar',amount:250000,recordedBy:'Admin'},
- {id:'demo4',date:'2026-10-29',type:'Pemasukan',category:'Tarif penyeberangan',note:'Tarif penyeberangan',amount:175000,recordedBy:'Admin'},
- {id:'demo5',date:'2026-10-28',type:'Pengeluaran',category:'Perawatan sampan',note:'Perbaikan sampan',amount:500000,recordedBy:'Admin'}
-];
-let transactions=JSON.parse(localStorage.getItem('kd_transactions')||'null') ?? demoTransactions;
-let feedback=JSON.parse(localStorage.getItem('kd_feedback')||'null') ?? [
- {name:'Andi Saputra',kind:'Saran',date:'30 Oktober 2026, 20:15',message:'Pelayanan penyeberangan sudah sangat baik. Semoga bisa ditambah jadwal malam.'},
- {name:'Siti Aminah',kind:'Kritik',date:'30 Oktober 2026, 18:42',message:'Mohon lampu di dermaga diperbaiki karena malam hari masih gelap.'},
- {name:'Joko',kind:'Saran',date:'29 Oktober 2026, 17:20',message:'Tarif sudah sesuai. Terima kasih kepada pengelola yang selalu menjaga kebersihan dermaga.'}
-];
-let boats=JSON.parse(localStorage.getItem('kd_boats')||'[{"name":"Sampan 01","note":"Aktif","status":"Beroperasi"},{"name":"Sampan 02","note":"Aktif","status":"Beroperasi"},{"name":"Sampan 03","note":"Aktif","status":"Beroperasi"},{"name":"Sampan 04","note":"Perbaikan","status":"Tidak Operasi"}]');
-function save(){localStorage.setItem('kd_transactions',JSON.stringify(transactions));localStorage.setItem('kd_feedback',JSON.stringify(feedback));localStorage.setItem('kd_boats',JSON.stringify(boats));}
-function totals(){let ins=transactions.filter(t=>t.type==='Pemasukan').reduce((a,t)=>a+Number(t.amount),0),outs=transactions.filter(t=>t.type==='Pengeluaran').reduce((a,t)=>a+Number(t.amount),0);$('#totalIn').textContent=money(ins);$('#totalOut').textContent=money(outs);$('#balance').textContent=money(ins-outs);$('#count').textContent=transactions.length;$('#reportSummary').innerHTML=`<p>Total pemasukan: <b>${money(ins)}</b></p><p>Total pengeluaran: <b>${money(outs)}</b></p><p>Saldo: <b>${money(ins-outs)}</b></p>`;}
-function transactionRows(list){return list.slice().reverse().map(t=>`<tr><td>${t.date}</td><td><span class="pill ${t.type==='Pemasukan'?'in':'out'}">${t.type}</span></td><td><b>${esc(t.category||'-')}</b><br>${esc(t.note)}<br><small>Dicatat: ${esc(t.recordedBy||'Admin')}${t.receiptName?' · Bukti: '+esc(t.receiptName):''}</small></td><td>${money(t.amount)}</td><td><button class="small-action" onclick="editTx('${t.id}')">Edit</button> <button class="small-action danger" onclick="deleteTx('${t.id}')">Hapus</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">Belum ada transaksi.</td></tr>'}
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function render(){totals();$('#recentRows').innerHTML=transactionRows(transactions.slice(-5));renderHistory();renderBoats();renderFeedback();renderChart();}
-function renderHistory(){let q=($('#searchHistory')?.value||'').toLowerCase(),type=$('#typeFilter')?.value||'';$('#historyRows').innerHTML=transactionRows(transactions.filter(t=>(!type||t.type===type)&&t.note.toLowerCase().includes(q)));}
-function renderBoats(){let html=boats.map((b,i)=>`<tr><td>${i+1}</td><td>${esc(b.name)}</td><td>${esc(b.note)}</td><td><span class="boat-status">${esc(b.status)}</span></td></tr>`).join('')||'<tr><td colspan="4">Belum ada sampan.</td></tr>';$('#boatRows').innerHTML=html;$('#boatRowsFull').innerHTML=html;}
-function renderFeedback(){let html=feedback.slice().reverse().map(f=>`<div class="feedback"><div class="person">${esc(f.name.slice(0,1).toUpperCase())}</div><div><b>${esc(f.name)}</b> <span class="pill ${f.kind==='Kritik'?'out':'in'}">${esc(f.kind)}</span><br><small>${f.date}</small><p>${esc(f.message)}</p>${f.reply?`<div class="reply"><b>Balasan pengelola:</b> ${esc(f.reply)}</div>`:''}</div></div>`).join('')||'<div class="empty">Belum ada kritik atau saran dari warga.</div>';$('#feedbackList').innerHTML=html;$('#feedbackPreview').innerHTML=feedback.slice(-3).reverse().map(f=>`<div class="feedback"><div class="person">${esc(f.name.slice(0,1).toUpperCase())}</div><div><b>${esc(f.name)}</b> <span class="pill ${f.kind==='Kritik'?'out':'in'}">${esc(f.kind)}</span><small> · ${f.date}</small><p>${esc(f.message)}</p></div></div>`).join('')||'<div class="empty">Belum ada komentar.</div>';}
-function renderChart(){let groups=Array.from({length:7},(_,i)=>({in:0,out:0,label:['1','5','10','15','20','25','30'][i]}));transactions.forEach(t=>{let day=Number(t.date.slice(-2)),idx=Math.min(6,Math.floor((day-1)/5));groups[idx][t.type==='Pemasukan'?'in':'out']+=Number(t.amount)});let max=Math.max(1,...groups.flatMap(g=>[g.in,g.out]));$('#chart').innerHTML=groups.map(g=>`<div class="bar-group"><div class="bar" style="height:${Math.max(2,g.in/max*85)}%"></div><div class="bar out" style="height:${Math.max(2,g.out/max*85)}%"></div><small>${g.label}</small></div>`).join('');}
-function addTx(data){transactions.push({...data,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),amount:Number(data.amount)});save();render();}
-window.editTx=(id)=>{let t=transactions.find(x=>x.id===id);if(!t)return;let note=prompt('Ubah keterangan:',t.note);if(note===null)return;let amount=prompt('Ubah jumlah (angka saja):',t.amount);if(amount===null)return;if(!Number(amount)||Number(amount)<1){alert('Jumlah tidak valid.');return;}t.note=note;t.amount=Number(amount);save();render();};
-window.deleteTx=(id)=>{if(!confirm('Hapus transaksi ini?'))return;transactions=transactions.filter(x=>x.id!==id);save();render();};
-function bindForm(id,type){$('#'+id).addEventListener('submit',e=>{e.preventDefault();let fd=new FormData(e.target),d=Object.fromEntries(fd);let file=fd.get('receipt');d.receiptName=file&&file.size?file.name:'';delete d.receipt;addTx({...d,type});e.target.reset();alert(type+' berhasil dicatat.');});}
-bindForm('incomeForm','Pemasukan');bindForm('expenseForm','Pengeluaran');
-$('#quickForm').addEventListener('submit',e=>{if(e.submitter?.value==='cancel')return;e.preventDefault();let d=Object.fromEntries(new FormData(e.target));d.id=undefined;addTx(d);$('#transactionDialog').close();e.target.reset();});
-$('#addTransaction').onclick=()=>{$('#quickForm [name=date]').value=today();$('#transactionDialog').showModal();};
-$('#feedbackForm').addEventListener('submit',e=>{e.preventDefault();let d=Object.fromEntries(new FormData(e.target));feedback.push({...d,date:new Date().toLocaleString('id-ID')});save();renderFeedback();e.target.reset();alert('Komentar berhasil disimpan pada perangkat ini.');});
-$('#addBoat').onclick=()=>{let name=prompt('Nama sampan:');if(!name)return;boats.push({name,note:'Aktif',status:'Beroperasi'});save();renderBoats();};
-$('#searchHistory').addEventListener('input',renderHistory);$('#typeFilter').addEventListener('change',renderHistory);
-$('#exportCsv').onclick=()=>{let rows=[['Tanggal','Jenis','Keterangan','Jumlah'],...transactions.map(t=>[t.date,t.type,t.note,t.amount])];let csv=rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='riwayat-kas-dermaga.csv';a.click();URL.revokeObjectURL(a.href);};
-$('#printReport').onclick=()=>window.print();
-function go(page){$$('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+page));$$('.nav').forEach(n=>n.classList.toggle('active',n.dataset.page===page));if(page==='riwayat')renderHistory();}
-$$('.nav').forEach(n=>n.onclick=()=>go(n.dataset.page));$$('[data-goto]').forEach(b=>b.onclick=()=>go(b.dataset.goto));
-render();$$('input[type=date]').forEach(i=>i.value=today());
+/* KAS DERMAGA — Supabase connected */
+const SUPABASE_URL = 'https://stfruttolbhpgpjkbeys.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_4MWOY_Kig6y4wKO0OHZVCA_JhFRxJrt';
+const { createClient } = window.supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const $ = s => document.querySelector(s);
+const money = n => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+const today = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+const monthKey = today().slice(0, 7);
+const fmtDate = s => new Date(s + 'T00:00:00').toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let transactions = [], comments = [], session = null, isAdmin = false, loading = false;
+
+function totals(rows) {
+  return rows.reduce((x, t) => { x[t.type === 'Pemasukan' ? 'in' : 'out'] += Number(t.amount); return x; }, { in: 0, out: 0 });
+}
+function setStatus(text, good = true) {
+  const el = $('#connectionStatus');
+  if (el) { el.textContent = text; el.classList.toggle('offline', !good); }
+}
+function txHtml(t, editable = false) {
+  return `<article class="transaction"><div class="tx-icon ${t.type === 'Pemasukan' ? 'in' : 'out'}">${t.type === 'Pemasukan' ? '↙' : '↗'}</div><div class="tx-info"><b>${esc(t.category)}</b><small>${fmtDate(t.date)} · ${esc(t.note)}</small></div><div class="tx-side"><strong class="tx-amount ${t.type === 'Pemasukan' ? 'in' : 'out'}">${t.type === 'Pemasukan' ? '+' : '−'}${money(t.amount)}</strong>${editable ? `<button class="edit-link" data-edit="${esc(t.id)}">Edit</button> <button class="edit-link danger-link" data-delete="${esc(t.id)}">Hapus</button>` : ''}</div></article>`;
+}
+function render() {
+  const all = totals(transactions), m = totals(transactions.filter(t => t.date.startsWith(monthKey)));
+  $('#balance').textContent = money(all.in - all.out);
+  $('#totalIn').textContent = money(m.in); $('#totalOut').textContent = money(m.out);
+  $('#reportIn').textContent = money(m.in); $('#reportOut').textContent = money(m.out); $('#reportNet').textContent = money(m.in - m.out);
+  $('#monthLabel').textContent = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  const recent = [...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
+  $('#recentList').innerHTML = recent.length ? recent.map(t => txHtml(t)).join('') : '<div class="empty">Belum ada transaksi.</div>';
+  $('#adminLabel').textContent = isAdmin ? 'ADMIN AKTIF' : 'PENGUNJUNG';
+  document.querySelectorAll('[data-open]').forEach(b => { b.disabled = !isAdmin; b.title = isAdmin ? '' : 'Login admin untuk mencatat transaksi'; });
+}
+async function loadTransactions() {
+  const { data, error } = await db.from('transactions').select('*').order('transaction_date', { ascending: false });
+  if (error) { console.error(error); setStatus('Gagal memuat transaksi', false); return; }
+  transactions = (data || []).map(r => ({ id: r.id, type: r.type, date: r.transaction_date, category: r.category, note: r.description, amount: Number(r.amount) }));
+  render(); setStatus('Terhubung ke database');
+}
+async function loadComments() {
+  const query = db.from('comments').select('*').order('created_at', { ascending: false });
+  const { data, error } = await query;
+  if (error) { console.error(error); return; }
+  comments = data || [];
+}
+async function refreshSession() {
+  const { data } = await db.auth.getSession(); session = data.session;
+  isAdmin = false;
+  if (session?.user) {
+    const { data: adminRow, error } = await db.from('admin_users').select('user_id').eq('user_id', session.user.id).maybeSingle();
+    // RLS on admin_users may block direct reads; test admin capability through an insert-safe RPC-free check.
+    // The transactions write policies still enforce admin status on the server.
+    isAdmin = !!adminRow && !error;
+  }
+  if (session?.user && !isAdmin) {
+    // Check via an update-free authenticated read of own admin record. If table read is restricted,
+    // admin can still be recognized after the server rejects/accepts a protected operation.
+    const { data: ownAdmin } = await db.rpc('is_admin');
+    isAdmin = ownAdmin === true;
+  }
+  $('#profileBtn').textContent = isAdmin ? 'A' : '↗';
+  render();
+}
+function openTx(type = 'Pemasukan', id = null) {
+  if (!isAdmin) { showLogin(); return; }
+  const f = $('#transactionForm'); f.reset(); f.elements.id.value = ''; f.elements.date.value = today();
+  const old = id ? transactions.find(x => x.id === id) : null;
+  f.elements.type.value = old ? old.type : type;
+  if (old) { f.elements.id.value = old.id; f.elements.date.value = old.date; f.elements.category.value = old.category; f.elements.note.value = old.note; f.elements.amount.value = old.amount; }
+  $('#dialogTitle').textContent = (old ? 'Edit ' : 'Tambah ') + f.elements.type.value;
+  $('#transactionDialog').showModal();
+}
+document.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => openTx(b.dataset.open === 'expense' ? 'Pengeluaran' : 'Pemasukan')));
+$('#closeDialog').onclick = () => $('#transactionDialog').close();
+$('#transactionForm').addEventListener('submit', async e => {
+  e.preventDefault(); if (!isAdmin) return showLogin();
+  const f = e.currentTarget, id = f.elements.id.value;
+  const row = { type: f.elements.type.value, transaction_date: f.elements.date.value, category: f.elements.category.value, description: f.elements.note.value.trim(), amount: Number(f.elements.amount.value), created_by: session.user.id };
+  if (!row.description || !row.amount || row.amount < 1) return;
+  const button = f.querySelector('[type="submit"]'); button.disabled = true; button.textContent = 'Menyimpan...';
+  const result = id ? await db.from('transactions').update(row).eq('id', id) : await db.from('transactions').insert(row);
+  button.disabled = false; button.textContent = 'Simpan Transaksi';
+  if (result.error) { alert('Gagal menyimpan: ' + result.error.message); return; }
+  $('#transactionDialog').close(); await loadTransactions();
+});
+function show(title, body) { $('#simpleTitle').textContent = title; $('#simpleBody').innerHTML = body; $('#simpleDialog').showModal(); }
+function showLogin() {
+  show('Login Admin', `<p class="muted">Masuk menggunakan akun admin KAS DERMAGA.</p><form id="loginForm"><label>Email<input name="email" type="email" autocomplete="username" required value=""></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="submit-button">Masuk sebagai Admin</button><p class="form-note" id="loginMessage"></p></form>`);
+  $('#loginForm').onsubmit = async e => {
+    e.preventDefault(); const f = e.currentTarget, msg = $('#loginMessage'), btn = f.querySelector('button');
+    btn.disabled = true; btn.textContent = 'Memeriksa...';
+    const { error } = await db.auth.signInWithPassword({ email: f.email.value.trim(), password: f.password.value });
+    btn.disabled = false; btn.textContent = 'Masuk sebagai Admin';
+    if (error) { msg.textContent = 'Login gagal: ' + error.message; return; }
+    await refreshSession();
+    if (!isAdmin) { await db.auth.signOut(); await refreshSession(); msg.textContent = 'Akun berhasil masuk, tetapi belum terdaftar sebagai admin. Periksa UID di tabel admin_users.'; return; }
+    $('#simpleDialog').close(); setStatus('Login admin berhasil');
+  };
+}
+function showTab(tab) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === tab));
+  if (tab === 'home') return;
+  if (tab === 'history') { show('Riwayat Transaksi', transactions.length ? [...transactions].sort((a, b) => b.date.localeCompare(a.date)).map(t => txHtml(t, isAdmin)).join('') : '<p>Belum ada transaksi.</p>'); return; }
+  if (tab === 'reports') { const x = totals(transactions.filter(t => t.date.startsWith(monthKey))), all = totals(transactions); show('Laporan Bulan Ini', `<p>Periode: <b>${esc($('#monthLabel').textContent)}</b></p><p>Total pemasukan: <b class="green-text">${money(x.in)}</b></p><p>Total pengeluaran: <b class="red-text">${money(x.out)}</b></p><p>Saldo bersih bulan ini: <b>${money(x.in - x.out)}</b></p><hr><p>Saldo keseluruhan: <b>${money(all.in - all.out)}</b></p><p>Jumlah transaksi: <b>${transactions.length}</b></p><button class="submit-button" id="exportCsv">Unduh laporan CSV</button>`); $('#exportCsv').onclick = exportCsv; return; }
+  if (tab === 'comments') { renderComments(); return; }
+}
+async function renderComments() {
+  await loadComments();
+  const visible = comments.filter(c => c.status === 'approved' || isAdmin);
+  const list = visible.length ? visible.map(c => `<article class="comment"><b>${esc(c.name)}</b><small>${new Date(c.created_at).toLocaleDateString('id-ID')}</small><p>${esc(c.message)}</p>${isAdmin ? `<small>Status: ${esc(c.status)}</small>${c.status !== 'approved' ? `<button class="edit-link" data-approve="${c.id}">Setujui</button>` : ''} <button class="edit-link danger-link" data-hide="${c.id}">Sembunyikan</button>` : ''}</article>`).join('') : '<p>Belum ada komentar yang ditampilkan.</p>';
+  show('Komentar Warga', `<p class="muted">Komentar warga akan diperiksa admin sebelum ditampilkan.</p><form id="commentForm"><label>Nama warga<input name="name" required minlength="2" maxlength="80" placeholder="Nama Anda"></label><label>Komentar<textarea name="message" rows="3" required minlength="2" maxlength="2000" placeholder="Tulis saran atau pertanyaan..."></textarea></label><button class="submit-button">Kirim komentar</button><p class="form-note" id="commentMessage"></p></form><hr>${isAdmin ? '<p><b>Moderasi admin:</b> komentar menunggu persetujuan juga terlihat di sini.</p>' : ''}${list}`);
+  $('#commentForm').onsubmit = async e => { e.preventDefault(); const f = e.currentTarget, msg = $('#commentMessage'), btn = f.querySelector('button'); btn.disabled = true; const { error } = await db.from('comments').insert({ name: f.name.value.trim(), message: f.message.value.trim(), status: 'pending' }); btn.disabled = false; if (error) { msg.textContent = 'Komentar gagal dikirim: ' + error.message; return; } msg.textContent = 'Komentar terkirim dan menunggu persetujuan admin.'; f.reset(); };
+}
+$('#simpleBody').addEventListener('click', async e => {
+  const ed = e.target.closest('[data-edit]'), del = e.target.closest('[data-delete]'), approve = e.target.closest('[data-approve]'), hide = e.target.closest('[data-hide]');
+  if (ed) { $('#simpleDialog').close(); openTx('Pemasukan', ed.dataset.edit); }
+  if (del && isAdmin && confirm('Hapus transaksi ini?')) { const { error } = await db.from('transactions').delete().eq('id', del.dataset.delete); if (error) alert('Gagal menghapus: ' + error.message); else { await loadTransactions(); showTab('history'); } }
+  if (approve && isAdmin) { const { error } = await db.from('comments').update({ status: 'approved' }).eq('id', approve.dataset.approve); if (error) alert(error.message); else renderComments(); }
+  if (hide && isAdmin) { const { error } = await db.from('comments').update({ status: 'hidden' }).eq('id', hide.dataset.hide); if (error) alert(error.message); else renderComments(); }
+});
+$('#closeSimple').onclick = () => $('#simpleDialog').close();
+$('#profileBtn').onclick = async () => { if (!isAdmin) return showLogin(); show('Akun Admin', `<p>Login sebagai <b>${esc(session.user.email)}</b></p><button class="submit-button" id="logoutBtn">Keluar</button>`); $('#logoutBtn').onclick = async () => { await db.auth.signOut(); await refreshSession(); $('#simpleDialog').close(); setStatus('Anda telah keluar'); }; };
+document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+function exportCsv() { const rows = [['Tanggal', 'Jenis', 'Kategori', 'Keterangan', 'Nominal'], ...transactions.map(t => [t.date, t.type, t.category, t.note, t.amount])]; const csv = rows.map(r => r.map(v => '"' + String(v).replaceAll('"', '""') + '"').join(',')).join('\n'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' })); a.download = 'laporan-kas-dermaga.csv'; a.click(); URL.revokeObjectURL(a.href); }
+$('#todayLabel').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+(async function init() {
+  try { await refreshSession(); await loadTransactions(); await loadComments(); db.auth.onAuthStateChange(() => { setTimeout(async () => { await refreshSession(); }, 0); }); }
+  catch (err) { console.error(err); setStatus('Belum dapat terhubung', false); }
+})();

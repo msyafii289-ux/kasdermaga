@@ -1,82 +1,24 @@
 <!doctype html>
 <html lang="id">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>KAS Dermaga | Penyeberangan Parit Haji Yakub</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#102d4d"><title>KAS DERMAGA</title><link rel="stylesheet" href="style.css">
 </head>
-<body>
-<div class="app">
-  <header class="hero">
-    <div class="brand">
-      <div class="logo" aria-label="Logo perahu"><svg viewBox="0 0 120 82" role="img"><circle cx="60" cy="35" r="31" fill="#ffbd22"/><path d="M16 48h88L91 65H31z" fill="#092c50"/><path d="M27 45 40 26h38l16 19z" fill="#fff"/><path d="M46 26V15h24v11M57 15V8h5v7" fill="none" stroke="#092c50" stroke-width="4"/><path d="M8 68q18 9 36 0t36 0 32 0" fill="none" stroke="#0878dc" stroke-width="6" stroke-linecap="round"/></svg></div>
-      <div><h1>KAS DERMAGA</h1><p>PENYEBERANGAN<br>PARIT HAJI YAKUB</p></div>
-    </div>
-    <div class="profile"><span class="avatar">A</span><span><b>Admin</b><small>Pengelola Kas</small></span></div>
-  </header>
-  <div class="layout">
-    <aside class="sidebar">
-      <nav>
-        <button class="nav active" data-page="beranda">⌂ <span>Beranda</span></button>
-        <button class="nav" data-page="pemasukan">⬆ <span>Pemasukan</span></button>
-        <button class="nav" data-page="pengeluaran">⬇ <span>Pengeluaran</span></button>
-        <button class="nav" data-page="riwayat">▤ <span>Riwayat Transaksi</span></button>
-        <button class="nav" data-page="laporan">▣ <span>Laporan</span></button>
-        <button class="nav" data-page="sampan">⛵ <span>Data Sampan</span></button>
-        <button class="nav" data-page="warga">♟ <span>Data Pengguna</span></button>
-        <button class="nav" data-page="kritik">▢ <span>Kritik & Saran</span></button>
-        <button class="nav" data-page="pengaturan">⚙ <span>Pengaturan</span></button>
-      </nav>
-      <div class="sidebar-bottom">KAS DERMAGA <small>Versi awal</small></div>
-    </aside>
-    <main class="content">
-      <section class="page active" id="page-beranda">
-        <div class="cards">
-          <article class="stat green"><div class="stat-icon">💰</div><div><label>Total Pemasukan</label><strong id="totalIn">Rp 0</strong><small>Bulan ini</small></div></article>
-          <article class="stat red"><div class="stat-icon">👛</div><div><label>Total Pengeluaran</label><strong id="totalOut">Rp 0</strong><small>Bulan ini</small></div></article>
-          <article class="stat blue"><div class="stat-icon">🪙</div><div><label>Saldo Kas</label><strong id="balance">Rp 0</strong><small>Saldo keseluruhan</small></div></article>
-          <article class="stat purple"><div class="stat-icon">▤</div><div><label>Jumlah Transaksi</label><strong id="count">0</strong><small>Transaksi tercatat</small></div></article>
-        </div>
-        <div class="columns">
-          <div class="left-col">
-            <section class="panel">
-              <div class="panel-head"><h2>▣ Transaksi Terbaru</h2><button class="primary" id="addTransaction">＋ Tambah Transaksi</button></div>
-              <div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Jenis</th><th>Keterangan</th><th>Jumlah</th><th>Aksi</th></tr></thead><tbody id="recentRows"></tbody></table></div>
-              <button class="link" data-goto="riwayat">Lihat Semua Riwayat →</button>
-            </section>
-            <section class="panel">
-              <div class="panel-head"><h2>🗨 Kritik & Saran dari Warga</h2><button class="primary" data-goto="kritik">＋ Tulis Kritik / Saran</button></div>
-              <div id="feedbackPreview"></div>
-              <button class="link" data-goto="kritik">Lihat Semua Kritik & Saran →</button>
-            </section>
-          </div>
-          <div class="right-col">
-            <section class="panel">
-              <div class="panel-head"><h2>⛵ Data Sampan Aktif</h2><button class="primary" data-goto="sampan">＋ Tambah Sampan</button></div>
-              <div class="table-wrap"><table><thead><tr><th>No</th><th>Nama Sampan</th><th>Keterangan</th><th>Status</th></tr></thead><tbody id="boatRows"></tbody></table></div>
-            </section>
-            <section class="panel">
-              <div class="panel-head"><h2>▥ Statistik Bulanan</h2><span class="month">Ringkasan</span></div>
-              <div class="legend"><span>🟩 Pemasukan</span><span>🟥 Pengeluaran</span></div>
-              <div class="chart" id="chart"></div>
-            </section>
-          </div>
-        </div>
-      </section>
-      <section class="page" id="page-pemasukan"><section class="panel"><div class="panel-head"><h2>Tambah Pemasukan</h2></div><form id="incomeForm" class="form"><label>Tanggal<input type="date" name="date" required></label><label>Kategori<select name="category"><option>Tarif penyeberangan</option><option>Penyewaan sampan</option><option>Iuran anggota</option><option>Pendaftaran anggota</option><option>Uang asuransi</option><option>Sumbangan warga</option><option>Lainnya</option></select></label><label>Keterangan lengkap<input name="note" placeholder="Contoh: Pembayaran sewa sampan nomor 2" required></label><label>Jumlah (Rp)<input type="number" name="amount" min="1" required></label><label>Bukti transaksi (opsional)<input type="file" name="receipt" accept="image/*,.pdf"></label><label>Dicatat oleh<input name="recordedBy" value="Admin" required></label><button class="primary">Simpan Pemasukan</button></form></section></section>
-      <section class="page" id="page-pengeluaran"><section class="panel"><div class="panel-head"><h2>Tambah Pengeluaran</h2></div><form id="expenseForm" class="form"><label>Tanggal<input type="date" name="date" required></label><label>Kategori<select name="category"><option>Perawatan sampan</option><option>Perbaikan mesin</option><option>Pembelian BBM</option><option>Pembelian oli</option><option>Perbaikan dermaga</option><option>Pembelian perlengkapan</option><option>Biaya operasional</option><option>Pembayaran asuransi</option><option>Lainnya</option></select></label><label>Keterangan lengkap<input name="note" placeholder="Contoh: Mengganti tali sampan nomor 2" required></label><label>Jumlah (Rp)<input type="number" name="amount" min="1" required></label><label>Bukti transaksi (opsional)<input type="file" name="receipt" accept="image/*,.pdf"></label><label>Dicatat oleh<input name="recordedBy" value="Admin" required></label><button class="primary">Simpan Pengeluaran</button></form></section></section>
-      <section class="page" id="page-riwayat"><section class="panel"><div class="panel-head"><h2>Riwayat Transaksi</h2><button class="primary" id="exportCsv">Unduh CSV</button></div><div class="filters"><input id="searchHistory" placeholder="Cari keterangan..."><select id="typeFilter"><option value="">Semua transaksi</option><option value="Pemasukan">Pemasukan</option><option value="Pengeluaran">Pengeluaran</option></select></div><div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Jenis</th><th>Keterangan</th><th>Jumlah</th><th>Aksi</th></tr></thead><tbody id="historyRows"></tbody></table></div></section></section>
-      <section class="page" id="page-laporan"><section class="panel"><h2>Laporan Keuangan</h2><p>Ringkasan dihitung dari seluruh transaksi yang tersimpan di browser ini.</p><div id="reportSummary"></div><button class="primary" id="printReport">Cetak Laporan</button></section></section>
-      <section class="page" id="page-sampan"><section class="panel"><div class="panel-head"><h2>Data Sampan</h2><button class="primary" id="addBoat">＋ Tambah Sampan</button></div><div class="table-wrap"><table><thead><tr><th>No</th><th>Nama Sampan</th><th>Keterangan</th><th>Status</th></tr></thead><tbody id="boatRowsFull"></tbody></table></div></section></section>
-      <section class="page" id="page-warga"><section class="panel"><h2>Data Pengguna</h2><p>Daftar pengguna dan hak akses akan dihubungkan ke Supabase pada tahap berikutnya.</p></section></section>
-      <section class="page" id="page-kritik"><section class="panel"><div class="panel-head"><h2>Kritik & Saran Warga</h2></div><form id="feedbackForm" class="form"><label>Nama<input name="name" placeholder="Nama Anda" required></label><label>Jenis<select name="kind"><option>Saran</option><option>Kritik</option><option>Pertanyaan</option></select></label><label>Pesan<textarea name="message" rows="3" placeholder="Tuliskan kritik atau saran..." required></textarea></label><button class="primary">Kirim Komentar</button></form><p class="hint">Contoh awal ini menyimpan komentar di perangkat yang sedang digunakan. Agar semua warga dapat melihat komentar yang sama, tahap berikutnya perlu menghubungkan database online.</p><div id="feedbackList"></div></section></section>
-      <section class="page" id="page-pengaturan"><section class="panel"><h2>Pengaturan Akses</h2><p><b>Mode yang direncanakan: satu Admin saja.</b> Tidak ada akun warga untuk masuk ke dashboard. Warga hanya dapat mengirim kritik/saran melalui halaman publik terpisah.</p><p class="hint">Penting: versi ini masih menyimpan data di browser. Pembatasan akses yang benar harus diaktifkan melalui Supabase Authentication dan Row Level Security sebelum website dipublikasikan.</p></section></section>
-    </main>
-  </div>
+<body><div class="phone-shell">
+<header class="topbar"><div class="brand-mark">KD</div><div class="brand-copy"><strong>KAS DERMAGA</strong><span>Parit Haji Yakub · Desa Bunga Tanjung</span></div><button class="avatar" id="profileBtn">A</button></header>
+<main>
+<section class="welcome"><div><p class="eyebrow" id="adminLabel">PENGUNJUNG</p><h1>Ringkasan Kas</h1><p class="muted" id="todayLabel"></p></div><span class="status" id="connectionStatus"><i></i> Menghubungkan...</span></section>
+<section class="balance-card"><div class="balance-head"><span>Saldo Kas Saat Ini</span><span>DERMAGA</span></div><div class="balance" id="balance">Rp 0</div><div class="balance-foot"><span>Dihitung dari seluruh transaksi</span><span>↗</span></div></section>
+<section class="stat-grid"><article class="stat-card income"><div class="stat-icon">↙</div><span>Pemasukan bulan ini</span><strong id="totalIn">Rp 0</strong></article><article class="stat-card expense"><div class="stat-icon">↗</div><span>Pengeluaran bulan ini</span><strong id="totalOut">Rp 0</strong></article></section>
+<section class="quick-actions"><button class="action-button add" data-open="income"><span>＋</span><b>Tambah<br>pemasukan</b></button><button class="action-button minus" data-open="expense"><span>－</span><b>Tambah<br>pengeluaran</b></button><button class="action-button report" data-tab="reports"><span>▤</span><b>Lihat<br>laporan</b></button></section>
+<section class="section-head"><div><h2>Transaksi Terbaru</h2><p>Catatan kas terakhir</p></div><button class="text-button" data-tab="history">Lihat semua</button></section><section class="transaction-list" id="recentList"></section>
+<section class="section-head report-head"><div><h2>Ringkasan Bulanan</h2><p id="monthLabel"></p></div><span class="mini-badge">BULAN INI</span></section><section class="mini-summary"><div><span>Pemasukan</span><b class="green-text" id="reportIn">Rp 0</b></div><div><span>Pengeluaran</span><b class="red-text" id="reportOut">Rp 0</b></div><div><span>Saldo bersih</span><b id="reportNet">Rp 0</b></div></section>
+</main>
+<nav class="bottom-nav"><button class="nav-item active" data-tab="home"><span>⌂</span>Beranda</button><button class="nav-item" data-tab="history"><span>▤</span>Riwayat</button><button class="nav-item center" data-open="income"><span>＋</span>Tambah</button><button class="nav-item" data-tab="reports"><span>▥</span>Laporan</button><button class="nav-item" data-tab="comments"><span>☏</span>Komentar</button></nav>
 </div>
-<dialog id="transactionDialog"><form id="quickForm" method="dialog" class="form"><h2>Tambah Transaksi</h2><label>Jenis<select name="type"><option>Pemasukan</option><option>Pengeluaran</option></select></label><label>Tanggal<input name="date" type="date" required></label><label>Keterangan<input name="note" required></label><label>Kategori<select name="category"><option>Tarif penyeberangan</option><option>Penyewaan sampan</option><option>Iuran anggota</option><option>Uang asuransi</option><option>Perawatan sampan</option><option>Perbaikan mesin</option><option>BBM</option><option>Biaya operasional</option><option>Lainnya</option></select></label><label>Jumlah (Rp)<input name="amount" type="number" min="1" required></label><label>Dicatat oleh<input name="recordedBy" value="Admin" required></label><div class="actions"><button value="cancel" class="secondary">Batal</button><button class="primary" value="default">Simpan</button></div></form></dialog>
+<dialog id="transactionDialog"><form id="transactionForm"><div class="dialog-head"><div><p class="eyebrow">CATAT KAS</p><h2 id="dialogTitle">Tambah Pemasukan</h2></div><button type="button" class="close" id="closeDialog">×</button></div><input type="hidden" name="id"><input type="hidden" name="type" value="Pemasukan">
+<label>Tanggal<input type="date" name="date" required></label><label>Kategori<select name="category"><option>Tarif penyeberangan</option><option>Iuran anggota</option><option>Perbaikan dermaga</option><option>Perawatan fasilitas</option><option>BBM dan operasional</option><option>Asuransi</option><option>Lainnya</option></select></label>
+<label>Keterangan lengkap<textarea name="note" rows="3" placeholder="Contoh: Pembelian BBM untuk operasional penyeberangan" required></textarea></label><label>Jumlah (Rp)<input type="number" name="amount" min="1" inputmode="numeric" required></label><button class="submit-button" type="submit">Simpan Transaksi</button><p class="form-note">Data transaksi disimpan secara online di database KAS DERMAGA.</p></form></dialog>
+<dialog id="simpleDialog"><div class="simple-dialog"><button class="close" id="closeSimple">×</button><h2 id="simpleTitle">Menu</h2><div id="simpleBody"></div></div></dialog>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
-<script src="app.js"></script>
-</body></html>
+<script src="app.js"></script></body></html>
