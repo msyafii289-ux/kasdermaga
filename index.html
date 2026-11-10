@@ -14,6 +14,18 @@
   <button class="community-card" data-community="participants"><span>👥</span><div><b>Daftar Peserta</b><small>Lihat dan kelola nama peserta</small></div><strong>›</strong></button>
   <button class="community-card" data-community="schedule"><span>🗓️</span><div><b>Jadwal Giliran</b><small>Lihat jadwal tugas penyeberangan</small></div><strong>›</strong></button>
 </section>
+<section class="extra-menu">
+  <div class="section-head"><div><h2>Menu Tambahan</h2><p>Buka menu lainnya bila diperlukan</p></div><button class="more-menu-button" id="allMenusBtn" aria-label="Buka menu tambahan" aria-expanded="false">⋮</button></div>
+  <div class="extra-menu-grid" id="shortcutGrid">
+    <button class="community-card" data-community="policy"><span>📜</span><div><b>Syarat & Kebijakan</b><small>Ketentuan tambangan</small></div><strong>›</strong></button>
+    <button class="community-card" data-community="announcements"><span>📢</span><div><b>Pemberitahuan</b><small>Informasi dari pengelola</small></div><strong>›</strong></button>
+    <button class="community-card" data-community="insurance"><span>🛡️</span><div><b>Dana Asuransi</b><small>Dana khusus terpisah</small></div><strong>›</strong></button>
+    <button class="community-card" data-community="gallery"><span>🖼️</span><div><b>Galeri Foto</b><small>Dokumentasi kegiatan</small></div><strong>›</strong></button>
+    <button class="community-card" data-community="sponsors"><span>🤝</span><div><b>Sponsor & Iklan</b><small>Promosi usaha warga</small></div><strong>›</strong></button>
+  </div>
+</section>
+<section class="notice-preview"><div class="section-head"><div><h2>Pemberitahuan Terbaru</h2><p>Informasi dari pengelola</p></div><button class="text-button" data-community="announcements">Lihat semua</button></div><div id="noticePreview" class="notice-list"><div class="empty">Memuat pemberitahuan...</div></div></section>
+
 <section class="quick-actions"><button class="action-button add" data-open="income"><span>＋</span><b>Tambah<br>pemasukan</b></button><button class="action-button minus" data-open="expense"><span>－</span><b>Tambah<br>pengeluaran</b></button><button class="action-button report" data-tab="reports"><span>▤</span><b>Lihat<br>laporan</b></button></section>
 <section class="section-head"><div><h2>Transaksi Terbaru</h2><p>Catatan kas terakhir</p></div><button class="text-button" data-tab="history">Lihat semua</button></section><section class="transaction-list" id="recentList"></section>
 <section class="section-head report-head"><div><h2>Ringkasan Bulanan</h2><p id="monthLabel"></p></div><span class="mini-badge">BULAN INI</span></section><section class="mini-summary"><div><span>Pemasukan</span><b class="green-text" id="reportIn">Rp 0</b></div><div><span>Pengeluaran</span><b class="red-text" id="reportOut">Rp 0</b></div><div><span>Saldo bersih</span><b id="reportNet">Rp 0</b></div></section>
@@ -22,7 +34,7 @@
 </div>
 <dialog id="transactionDialog"><form id="transactionForm"><div class="dialog-head"><div><p class="eyebrow">CATAT KAS</p><h2 id="dialogTitle">Tambah Pemasukan</h2></div><button type="button" class="close" id="closeDialog">×</button></div><input type="hidden" name="id"><input type="hidden" name="type" value="Pemasukan">
 <label>Tanggal<input type="date" name="date" required></label><label>Kategori<select name="category"><option>Tarif penyeberangan</option><option>Iuran anggota</option><option>Perbaikan dermaga</option><option>Perawatan fasilitas</option><option>BBM dan operasional</option><option>Asuransi</option><option>Lainnya</option></select></label>
-<label>Keterangan lengkap<textarea name="note" rows="3" placeholder="Contoh: Pembelian BBM untuk operasional penyeberangan" required></textarea></label><label>Jumlah (Rp)<input type="number" name="amount" min="1" inputmode="numeric" required></label><button class="submit-button" type="submit">Simpan Transaksi</button><p class="form-note">Data transaksi disimpan secara online di database KAS DERMAGA.</p></form></dialog>
+<label>Jenis dana<select name="fund_type"><option value="operational">Kas Operasional</option><option value="insurance">Dana Asuransi (terpisah)</option></select></label><label>Keterangan lengkap<textarea name="note" rows="3" placeholder="Contoh: Pembelian BBM untuk operasional penyeberangan" required></textarea></label><label>Jumlah (Rp)<input type="number" name="amount" min="1" inputmode="numeric" required></label><button class="submit-button" type="submit">Simpan Transaksi</button><p class="form-note">Data transaksi disimpan secara online di database KAS DERMAGA.</p></form></dialog>
 <dialog id="simpleDialog"><div class="simple-dialog"><button class="close" id="closeSimple">×</button><h2 id="simpleTitle">Menu</h2><div id="simpleBody"></div></div></dialog>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js"></script></body></html>
