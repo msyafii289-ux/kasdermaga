@@ -10,7 +10,7 @@ const today = () => { const d = new Date(); return new Date(d - d.getTimezoneOff
 const monthKey = today().slice(0, 7);
 const fmtDate = s => new Date(s + 'T00:00:00').toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-let transactions = [], comments = [], session = null, isAdmin = false, loading = false;
+let transactions = [], comments = [], participants = [], dutySchedule = [], session = null, isAdmin = false, loading = false;
 
 function totals(rows) {
   return rows.reduce((x, t) => { x[t.type === 'Pemasukan' ? 'in' : 'out'] += Number(t.amount); return x; }, { in: 0, out: 0 });
@@ -63,6 +63,31 @@ async function refreshSession() {
   $('#profileBtn').textContent = isAdmin ? 'A' : '↗';
   render();
 }
+async function loadCommunityData() {
+  const [p, d] = await Promise.all([
+    db.from('participants').select('id,full_name,is_active').order('full_name'),
+    db.from('duty_schedule').select('id,participant_id,duty_date,shift_label,notes,participants(full_name)').order('duty_date', { ascending: true })
+  ]);
+  if (p.error) console.error('Peserta:', p.error);
+  else participants = p.data || [];
+  if (d.error) console.error('Jadwal:', d.error);
+  else dutySchedule = d.data || [];
+}
+function renderParticipants() {
+  const rows = participants.filter(p => p.is_active !== false);
+  const list = rows.length ? rows.map((p,i) => `<div class="community-row"><span class="row-number">${i+1}</span><b>${esc(p.full_name)}</b>${isAdmin ? `<button class="edit-link danger-link" data-participant-delete="${esc(p.id)}">Hapus</button>` : ''}</div>`).join('') : '<div class="empty">Belum ada nama peserta yang dimasukkan.</div>';
+  show('Daftar Peserta', `${isAdmin ? `<form id="participantForm" class="inline-admin-form"><label>Nama peserta<input name="full_name" required maxlength="120" placeholder="Masukkan nama peserta"></label><button class="submit-button">Tambah Peserta</button><p class="form-note" id="participantMessage"></p></form>` : '<p class="muted">Daftar nama peserta tambangan.</p>'}<div class="community-list">${list}</div><p class="form-note">Jumlah peserta aktif: ${rows.length}</p>`);
+  const form = $('#participantForm');
+  if (form) form.onsubmit = async e => { e.preventDefault(); const btn=form.querySelector('button'); btn.disabled=true; const {error}=await db.from('participants').insert({full_name:form.full_name.value.trim(),is_active:true}); btn.disabled=false; if(error){$('#participantMessage').textContent='Gagal menyimpan: '+error.message;return;} await loadCommunityData(); renderParticipants(); };
+}
+function renderSchedule() {
+  const rows = dutySchedule;
+  const list = rows.length ? rows.map(d => `<article class="schedule-row"><div class="schedule-date"><b>${new Date(d.duty_date+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit'})}</b><small>${new Date(d.duty_date+'T00:00:00').toLocaleDateString('id-ID',{month:'short',year:'numeric'})}</small></div><div class="schedule-info"><b>${esc(d.participants?.full_name || 'Peserta tidak ditemukan')}</b><small>${esc(d.shift_label || 'Giliran')}${d.notes ? ' · '+esc(d.notes) : ''}</small></div>${isAdmin ? `<button class="edit-link danger-link" data-schedule-delete="${esc(d.id)}">Hapus</button>` : ''}</article>`).join('') : '<div class="empty">Jadwal belum dimasukkan.</div>';
+  const options = participants.filter(p=>p.is_active!==false).map(p=>`<option value="${esc(p.id)}">${esc(p.full_name)}</option>`).join('');
+  show('Jadwal Giliran', `${isAdmin ? `<form id="scheduleForm" class="inline-admin-form"><label>Nama peserta<select name="participant_id" required>${options || '<option value="">Tambahkan peserta terlebih dahulu</option>'}</select></label><label>Tanggal giliran<input type="date" name="duty_date" required value="${today()}"></label><label>Keterangan giliran<input name="shift_label" maxlength="80" value="Giliran mingguan" required></label><label>Catatan (opsional)<input name="notes" maxlength="250" placeholder="Catatan tambahan"></label><button class="submit-button" ${options?'':'disabled'}>Tambah Jadwal</button><p class="form-note" id="scheduleMessage"></p></form>` : '<p class="muted">Jadwal giliran peserta tambangan.</p>'}<div class="community-list">${list}</div>`);
+  const form=$('#scheduleForm');
+  if(form) form.onsubmit=async e=>{e.preventDefault();const btn=form.querySelector('button');btn.disabled=true;const {error}=await db.from('duty_schedule').insert({participant_id:form.participant_id.value,duty_date:form.duty_date.value,shift_label:form.shift_label.value.trim(),notes:form.notes.value.trim()||null});btn.disabled=false;if(error){$('#scheduleMessage').textContent='Gagal menyimpan: '+error.message;return;}await loadCommunityData();renderSchedule();};
+}
 function openTx(type = 'Pemasukan', id = null) {
   if (!isAdmin) { showLogin(); return; }
   const f = $('#transactionForm'); f.reset(); f.elements.id.value = ''; f.elements.date.value = today();
@@ -113,8 +138,9 @@ async function renderComments() {
   show('Komentar Warga', `<p class="muted">Komentar warga akan diperiksa admin sebelum ditampilkan.</p><form id="commentForm"><label>Nama warga<input name="name" required minlength="2" maxlength="80" placeholder="Nama Anda"></label><label>Komentar<textarea name="message" rows="3" required minlength="2" maxlength="2000" placeholder="Tulis saran atau pertanyaan..."></textarea></label><button class="submit-button">Kirim komentar</button><p class="form-note" id="commentMessage"></p></form><hr>${isAdmin ? '<p><b>Moderasi admin:</b> komentar menunggu persetujuan juga terlihat di sini.</p>' : ''}${list}`);
   $('#commentForm').onsubmit = async e => { e.preventDefault(); const f = e.currentTarget, msg = $('#commentMessage'), btn = f.querySelector('button'); btn.disabled = true; const { error } = await db.from('comments').insert({ name: f.name.value.trim(), message: f.message.value.trim(), status: 'pending' }); btn.disabled = false; if (error) { msg.textContent = 'Komentar gagal dikirim: ' + error.message; return; } msg.textContent = 'Komentar terkirim dan menunggu persetujuan admin.'; f.reset(); };
 }
+document.querySelectorAll('[data-community]').forEach(b => b.addEventListener('click', async () => { await loadCommunityData(); b.dataset.community === 'participants' ? renderParticipants() : renderSchedule(); }));
 $('#simpleBody').addEventListener('click', async e => {
-  const ed = e.target.closest('[data-edit]'), del = e.target.closest('[data-delete]'), approve = e.target.closest('[data-approve]'), hide = e.target.closest('[data-hide]');
+  const ed = e.target.closest('[data-edit]'), del = e.target.closest('[data-delete]'), approve = e.target.closest('[data-approve]'), hide = e.target.closest('[data-hide]'), pd = e.target.closest('[data-participant-delete]'), sd = e.target.closest('[data-schedule-delete]');
   if (ed) { $('#simpleDialog').close(); openTx('Pemasukan', ed.dataset.edit); }
   if (del && isAdmin && confirm('Hapus transaksi ini?')) { const { error } = await db.from('transactions').delete().eq('id', del.dataset.delete); if (error) alert('Gagal menghapus: ' + error.message); else { await loadTransactions(); showTab('history'); } }
   if (approve && isAdmin) { const { error } = await db.from('comments').update({ status: 'approved' }).eq('id', approve.dataset.approve); if (error) alert(error.message); else renderComments(); }
