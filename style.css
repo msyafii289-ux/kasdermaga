@@ -59,3 +59,15 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .gallery-lightbox-controls .gallery-download{background:#f3bd50;color:#17324c;border:0;font-size:12px}
 .gallery-lightbox-controls button:disabled{opacity:.6}
 @media(max-width:480px){.gallery-lightbox{padding-left:9px;padding-right:9px}.gallery-lightbox-image{max-width:100%;max-height:100%}}
+
+/* Daftar Pembelian */
+.purchase-list{display:grid;gap:10px;margin:12px 0 24px}
+.purchase-row{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:14px;border:1px solid var(--line,#e4eaf0);border-radius:14px;background:#fff}
+.purchase-info,.purchase-side{display:grid;gap:5px;min-width:0}
+.purchase-info b{color:var(--ink,#172b40)}
+.purchase-info small,.purchase-side small{color:var(--muted,#7d8b99);font-size:12px}
+.purchase-info a{font-size:12px;color:var(--blue,#2468a6);text-decoration:underline}
+.purchase-side{text-align:right;justify-items:end;white-space:nowrap}
+.purchase-side strong{color:var(--ink,#172b40)}
+.form-grid-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:420px){.purchase-row{gap:8px;padding:11px}.purchase-side strong{font-size:13px}.form-grid-two{grid-template-columns:1fr 1fr}}
