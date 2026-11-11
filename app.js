@@ -280,6 +280,67 @@ function openGalleryPhoto(src,title){
 }
 async function renderGallery(){const r=await loadMedia('gallery');galleryItems=r.data;const form=isAdmin?`<form id="galleryForm" class="inline-admin-form"><h3>Tambah foto galeri</h3><label>Judul foto<input name="title" maxlength="120" required></label><label>Keterangan<input name="description" maxlength="500"></label><label>Pilih foto<input name="image" type="file" accept="image/*" required></label><button class="submit-button">Unggah foto</button><p class="form-note" id="galleryMessage"></p></form>`:'';const list=galleryItems.filter(g=>g.is_published||isAdmin).map(g=>`<article class="gallery-card"><img src="${esc(g.image_url)}" alt="${esc(g.title)}" data-gallery-open data-gallery-src="${esc(g.image_url)}" data-gallery-title="${esc(g.title)}" role="button" tabindex="0" title="Klik untuk melihat foto besar"><div><b>${esc(g.title)}</b><p>${esc(g.description||'')}</p>${isAdmin?`<button class="edit-link danger-link" data-gallery-delete="${esc(g.id)}">Hapus</button>`:''}</div></article>`).join('')||'<div class="empty">Belum ada foto di galeri.</div>';show('Galeri Foto',`${form}<div class="gallery-grid">${list}</div>`);const f=$('#galleryForm');if(f)f.onsubmit=async e=>{e.preventDefault();const b=f.querySelector('button'),msg=$('#galleryMessage'),file=f.image.files[0];if(!file)return;b.disabled=true;const path=`gallery/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;const up=await db.storage.from('community-media').upload(path,file,{upsert:false});if(up.error){msg.textContent='Gagal mengunggah foto: '+up.error.message;b.disabled=false;return;}const image_url=db.storage.from('community-media').getPublicUrl(path).data.publicUrl;const {error}=await db.from('gallery').insert({title:f.title.value.trim(),description:f.description.value.trim()||null,image_url,storage_path:path,is_published:true,created_by:session.user.id});b.disabled=false;if(error){msg.textContent='Foto terunggah, tetapi gagal menyimpan data: '+error.message;return;}renderGallery();};}
 
+
+// INFAK & WAKAF MASJID BAITURRAHMAN
+async function renderMosqueFunds() {
+  const [d, h, q] = await Promise.all([
+    db.from('mosque_donations').select('*').order('donation_date', { ascending: false }).order('created_at', { ascending: false }),
+    db.from('mosque_handover').select('*').order('handover_date', { ascending: false }).order('created_at', { ascending: false }),
+    db.from('mosque_qris_settings').select('qris_image_url').eq('id', 1).maybeSingle()
+  ]);
+  if (d.error || h.error || q.error) {
+    const err = d.error || h.error || q.error;
+    show('Infak & Wakaf Masjid', `<p class="form-note">Belum dapat memuat data: ${esc(err.message)}. Pastikan SQL tambahan pengaturan QRIS sudah dijalankan.</p>`);
+    return;
+  }
+  const donations = d.data || [], handovers = h.data || [];
+  const total = donations.reduce((s, r) => s + Number(r.amount || 0), 0);
+  const handed = handovers.reduce((s, r) => s + Number(r.amount || 0), 0);
+  const remaining = total - handed;
+  const qrisUrl = q.data?.qris_image_url || '';
+  const qrisAdmin = isAdmin ? `<form id="mosqueQrisForm" class="inline-admin-form"><h3>Pengaturan QRIS</h3><label>Unggah gambar QRIS<input name="qris_image" type="file" accept="image/*"></label><label>Atau alamat gambar QRIS<input name="qris_image_url" type="url" value="${esc(qrisUrl)}" placeholder="Tempel URL gambar QRIS"></label><button class="submit-button">Simpan QRIS</button><p class="form-note" id="mosqueQrisMessage">Admin dapat mengganti QRIS kapan saja dengan mengunggah gambar baru.</p></form>` : '';
+  const donationForm = isAdmin ? `<form id="mosqueDonationForm" class="inline-admin-form"><h3>Catat penerimaan</h3><label>Jenis dana<select name="donation_type"><option>Infak</option><option>Wakaf</option></select></label><label>Nominal diterima (Rp)<input name="amount" type="number" min="1" step="1" required></label><label>Tanggal diterima<input name="donation_date" type="date" value="${today()}" required></label><label>Keterangan (opsional)<textarea name="notes" rows="2" maxlength="1000"></textarea></label><button class="submit-button">Simpan penerimaan</button></form>` : '';
+  const handoverForm = isAdmin ? `<form id="mosqueHandoverForm" class="inline-admin-form"><h3>Catat penyerahan kepada Ketua Masjid</h3><label>Nominal diserahkan (Rp)<input name="amount" type="number" min="1" max="${Math.max(0, remaining)}" step="1" required></label><label>Tanggal penyerahan<input name="handover_date" type="date" value="${today()}" required></label><label>Nama penerima<input name="recipient" required maxlength="160" value="Ketua Masjid"></label><label>Link foto bukti / tanda terima (opsional)<input name="receipt_url" type="url" placeholder="https://..."></label><label>Keterangan (opsional)<textarea name="notes" rows="2" maxlength="1000"></textarea></label><button class="submit-button" ${remaining <= 0 ? 'disabled' : ''}>Simpan penyerahan</button></form>` : '';
+  const donationRows = donations.map(r => `<article class="transaction"><div class="tx-icon in">＋</div><div class="tx-info"><b>${esc(r.donation_type)}</b><small>${fmtDate(r.donation_date)}${r.notes ? ' · '+esc(r.notes) : ''}</small></div><div class="tx-side"><strong class="tx-amount in">${money(r.amount)}</strong></div></article>`).join('') || '<div class="empty">Belum ada penerimaan yang dicatat.</div>';
+  const handoverRows = handovers.map(r => `<article class="transaction"><div class="tx-icon out">↗</div><div class="tx-info"><b>Diserahkan kepada ${esc(r.recipient)}</b><small>${fmtDate(r.handover_date)}${r.notes ? ' · '+esc(r.notes) : ''}${r.receipt_url ? ` · <a href="${esc(r.receipt_url)}" target="_blank" rel="noopener">Lihat bukti</a>` : ''}</small></div><div class="tx-side"><strong class="tx-amount out">${money(r.amount)}</strong></div></article>`).join('') || '<div class="empty">Belum ada penyerahan yang dicatat.</div>';
+  show('Infak & Wakaf Masjid', `
+    <div class="mosque-fund-hero"><div class="eyebrow">MASJID BAITURRAHMAN</div><h3>Infak & Wakaf</h3><p>Salurkan kebaikan untuk kemakmuran masjid.</p>${qrisUrl ? `<a href="${esc(qrisUrl)}" target="_blank" rel="noopener"><img class="mosque-qris-image" src="${esc(qrisUrl)}" alt="QRIS Masjid Baiturrahman"></a><small>Pindai QRIS untuk melakukan pembayaran</small>` : '<div class="empty">QRIS belum dipasang oleh admin.</div>'}</div>
+    <div class="mosque-fund-stats"><div><small>Total penerimaan</small><b>${money(total)}</b></div><div><small>Sudah diserahkan</small><b>${money(handed)}</b></div><div><small>Sisa belum diserahkan</small><b>${money(remaining)}</b></div></div>
+    ${qrisAdmin}${donationForm}${handoverForm}
+    <h3>Riwayat penerimaan</h3><div class="transaction-list">${donationRows}</div>
+    <h3>Riwayat penyerahan</h3><div class="transaction-list">${handoverRows}</div>
+    <p class="form-note">Pembayaran QRIS tidak terbaca otomatis oleh website. Admin mencatat penerimaan setelah memeriksa transaksi, lalu mencatat penyerahan setelah dana diterima Ketua Masjid.</p>
+  `);
+  const qf = $('#mosqueQrisForm');
+  if (qf) qf.onsubmit = async e => {
+    e.preventDefault(); const btn=qf.querySelector('button'); btn.disabled=true;
+    let url=qf.qris_image_url.value.trim();
+    const file=qf.qris_image.files && qf.qris_image.files[0];
+    if(file){
+      const path=`mosque/qris-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+      const upload=await db.storage.from('community-media').upload(path,file,{upsert:true});
+      if(upload.error){btn.disabled=false;$('#mosqueQrisMessage').textContent='Gagal mengunggah QRIS: '+upload.error.message;return;}
+      url=db.storage.from('community-media').getPublicUrl(path).data.publicUrl;
+    }
+    const {error}=await db.from('mosque_qris_settings').upsert({id:1,qris_image_url:url || null,updated_at:new Date().toISOString()},{onConflict:'id'});
+    btn.disabled=false;
+    if(error){$('#mosqueQrisMessage').textContent='Gagal menyimpan QRIS: '+error.message;return;}
+    renderMosqueFunds();
+  };
+  const df = $('#mosqueDonationForm');
+  if (df) df.onsubmit = async e => {
+    e.preventDefault(); const f=df, btn=f.querySelector('button'); btn.disabled=true;
+    const {error}=await db.from('mosque_donations').insert({donation_type:f.donation_type.value,amount:Number(f.amount.value),donation_date:f.donation_date.value,notes:f.notes.value.trim()||null});
+    btn.disabled=false; if(error){alert('Gagal menyimpan penerimaan: '+error.message);return;} renderMosqueFunds();
+  };
+  const hf = $('#mosqueHandoverForm');
+  if (hf) hf.onsubmit = async e => {
+    e.preventDefault(); const f=hf, btn=f.querySelector('button'); btn.disabled=true;
+    const {error}=await db.from('mosque_handover').insert({amount:Number(f.amount.value),handover_date:f.handover_date.value,recipient:f.recipient.value.trim(),receipt_url:f.receipt_url.value.trim()||null,notes:f.notes.value.trim()||null});
+    btn.disabled=false; if(error){alert('Gagal menyimpan penyerahan: '+error.message);return;} renderMosqueFunds();
+  };
+}
+
 document.addEventListener('keydown',e=>{const photo=e.target.closest&&e.target.closest('[data-gallery-open]');if(photo&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openGalleryPhoto(photo.dataset.gallerySrc,photo.dataset.galleryTitle);}});
 document.querySelectorAll('[data-community]').forEach(b => b.addEventListener('click', async () => {
   const key = b.dataset.community;
@@ -288,6 +349,7 @@ document.querySelectorAll('[data-community]').forEach(b => b.addEventListener('c
   if (key === 'gallery') return renderGallery();
   if (key === 'sponsors') return renderSponsors();
   if (key === 'purchases') return renderPurchases();
+  if (key === 'mosque') return renderMosqueFunds();
   if (key === 'policy') return renderPolicy();
   if (key === 'participants' || key === 'schedule') {
     await loadCommunityData();
