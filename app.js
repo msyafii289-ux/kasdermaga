@@ -316,7 +316,36 @@ $('#profileBtn').onclick = async () => { if (!isAdmin) return showLogin(); show(
 document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
 function exportCsv() { const rows = [['Tanggal', 'Jenis', 'Kategori', 'Keterangan', 'Nominal'], ...transactions.map(t => [t.date, t.type, t.category, t.note, t.amount])]; const csv = rows.map(r => r.map(v => '"' + String(v).replaceAll('"', '""') + '"').join(',')).join('\n'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' })); a.download = 'laporan-kas-dermaga.csv'; a.click(); URL.revokeObjectURL(a.href); }
 $('#todayLabel').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+// Penghitung pengunjung unik per browser/perangkat
+async function updateVisitorCounter() {
+  const display = document.getElementById('visitorCount');
+  if (!display) return;
+  try {
+    const storageKey = 'kas_dermaga_visitor_key_v1';
+    let visitorKey = localStorage.getItem(storageKey);
+    if (!visitorKey) {
+      visitorKey = (window.crypto && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : 'v-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+      localStorage.setItem(storageKey, visitorKey);
+    }
+    const { error: insertError } = await db
+      .from('website_visitors')
+      .upsert({ visitor_key: visitorKey }, { onConflict: 'visitor_key', ignoreDuplicates: true });
+    if (insertError) throw insertError;
+    const { count, error: countError } = await db
+      .from('website_visitors')
+      .select('id', { count: 'exact', head: true });
+    if (countError) throw countError;
+    display.textContent = Number(count || 0).toLocaleString('id-ID') + ' orang';
+  } catch (error) {
+    console.error('Penghitung pengunjung:', error);
+    display.textContent = 'Belum tersedia';
+  }
+}
+
 (async function init() {
-  try { await refreshSession(); await loadTransactions(); await loadComments(); await loadAnnouncements(); db.auth.onAuthStateChange(() => { setTimeout(async () => { await refreshSession(); }, 0); }); }
+  try { await updateVisitorCounter(); await refreshSession(); await loadTransactions(); await loadComments(); await loadAnnouncements(); db.auth.onAuthStateChange(() => { setTimeout(async () => { await refreshSession(); }, 0); }); }
   catch (err) { console.error(err); setStatus('Belum dapat terhubung', false); }
 })();

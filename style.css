@@ -78,3 +78,8 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .running-text span{display:inline-block;padding-left:100%;animation:kas-running 22s linear infinite}
 @keyframes kas-running{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
 /* Animasi teks berjalan tetap aktif di PC dan HP */
+
+
+/* Penghitung pengunjung website */
+.visitor-counter{display:flex;align-items:center;justify-content:center;gap:7px;padding:8px 12px;background:#f3f6fa;color:#526477;font-size:11px;border-bottom:1px solid #e5ebf2}
+.visitor-counter strong{color:#102d4d;font-size:11px;font-weight:800}
