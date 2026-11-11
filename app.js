@@ -281,7 +281,20 @@ function openGalleryPhoto(src,title){
 async function renderGallery(){const r=await loadMedia('gallery');galleryItems=r.data;const form=isAdmin?`<form id="galleryForm" class="inline-admin-form"><h3>Tambah foto galeri</h3><label>Judul foto<input name="title" maxlength="120" required></label><label>Keterangan<input name="description" maxlength="500"></label><label>Pilih foto<input name="image" type="file" accept="image/*" required></label><button class="submit-button">Unggah foto</button><p class="form-note" id="galleryMessage"></p></form>`:'';const list=galleryItems.filter(g=>g.is_published||isAdmin).map(g=>`<article class="gallery-card"><img src="${esc(g.image_url)}" alt="${esc(g.title)}" data-gallery-open data-gallery-src="${esc(g.image_url)}" data-gallery-title="${esc(g.title)}" role="button" tabindex="0" title="Klik untuk melihat foto besar"><div><b>${esc(g.title)}</b><p>${esc(g.description||'')}</p>${isAdmin?`<button class="edit-link danger-link" data-gallery-delete="${esc(g.id)}">Hapus</button>`:''}</div></article>`).join('')||'<div class="empty">Belum ada foto di galeri.</div>';show('Galeri Foto',`${form}<div class="gallery-grid">${list}</div>`);const f=$('#galleryForm');if(f)f.onsubmit=async e=>{e.preventDefault();const b=f.querySelector('button'),msg=$('#galleryMessage'),file=f.image.files[0];if(!file)return;b.disabled=true;const path=`gallery/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;const up=await db.storage.from('community-media').upload(path,file,{upsert:false});if(up.error){msg.textContent='Gagal mengunggah foto: '+up.error.message;b.disabled=false;return;}const image_url=db.storage.from('community-media').getPublicUrl(path).data.publicUrl;const {error}=await db.from('gallery').insert({title:f.title.value.trim(),description:f.description.value.trim()||null,image_url,storage_path:path,is_published:true,created_by:session.user.id});b.disabled=false;if(error){msg.textContent='Foto terunggah, tetapi gagal menyimpan data: '+error.message;return;}renderGallery();};}
 
 document.addEventListener('keydown',e=>{const photo=e.target.closest&&e.target.closest('[data-gallery-open]');if(photo&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openGalleryPhoto(photo.dataset.gallerySrc,photo.dataset.galleryTitle);}});
-document.querySelectorAll('[data-community]').forEach(b => b.addEventListener('click', async () => { const key=b.dataset.community; if(key==='announcements') return renderAnnouncements(); if(key==='insurance') return renderInsurance(); if(key==='gallery') return renderGallery(); if(key==='sponsors') return renderSponsors(); if(key==='purchases') return renderPurchases(); await loadCommunityData(); key === 'participants' ? renderParticipants() : key === 'schedule' ? renderSchedule() : renderPolicy(); }));
+document.querySelectorAll('[data-community]').forEach(b => b.addEventListener('click', async () => {
+  const key = b.dataset.community;
+  if (key === 'announcements') return renderAnnouncements();
+  if (key === 'insurance') return renderInsurance();
+  if (key === 'gallery') return renderGallery();
+  if (key === 'sponsors') return renderSponsors();
+  if (key === 'purchases') return renderPurchases();
+  if (key === 'policy') return renderPolicy();
+  if (key === 'participants' || key === 'schedule') {
+    await loadCommunityData();
+    return key === 'participants' ? renderParticipants() : renderSchedule();
+  }
+  console.warn('Menu KAS DERMAGA tidak dikenal:', key);
+}));
 $('#allMenusBtn').onclick = () => { const grid=$('#shortcutGrid'); const expanded=grid.classList.toggle('expanded'); $('#allMenusBtn').textContent=expanded?'×':'⋮'; $('#allMenusBtn').setAttribute('aria-expanded',String(expanded)); };
 $('#simpleBody').addEventListener('click', async e => {
   const photo = e.target.closest('[data-gallery-open]'); if(photo){openGalleryPhoto(photo.dataset.gallerySrc,photo.dataset.galleryTitle);return;}
