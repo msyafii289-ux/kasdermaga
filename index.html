@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#102d4d"><title>KAS DERMAGA</title><link rel="stylesheet" href="style.css?v=20261112-pinnedadmin1">
+<meta name="theme-color" content="#102d4d"><title>KAS DERMAGA</title><link rel="stylesheet" href="style.css?v=20261112-admincollapse5">
 </head>
 <body><div class="phone-shell">
 <header class="topbar"><div class="brand-mark">KD</div><div class="brand-copy"><strong>KAS DERMAGA</strong><span>Parit Haji Yakub · Desa Bunga Tanjung</span></div><button class="avatar" id="profileBtn">A</button></header>
@@ -18,7 +18,7 @@
 </section>
 <section class="pinned-admin-section" id="pinnedAdminSection" hidden>
   <div class="pinned-admin-card">
-    <div class="pinned-admin-heading"><span class="pin-mark">📌</span><b>Pesan Penting Admin</b><span class="pinned-label">Disematkan</span></div>
+    <div class="pinned-admin-heading"><span class="pin-mark">📌</span><b>Pesan Penting Admin</b><span class="pinned-label">Disematkan</span><button type="button" class="pinned-toggle" id="pinnedAdminToggle" aria-expanded="true">Perkecil −</button></div>
     <div class="pinned-admin-content" id="pinnedAdminContent"></div>
   </div>
 </section>
@@ -35,8 +35,6 @@
     <button class="community-card" data-community="forum"><span>💬</span><div><b>Forum Warga Dermaga</b><small>Diskusi, foto, suka, dan balasan warga</small></div><strong>›</strong></button>
   </div>
 </section>
-<section class="notice-preview"><div class="section-head"><div><h2>Pemberitahuan Terbaru</h2><p>Informasi dari pengelola</p></div><button class="text-button" data-community="announcements">Lihat semua</button></div><div id="noticePreview" class="notice-list"><div class="empty">Memuat pemberitahuan...</div></div></section>
-
 <section class="quick-actions"><button class="action-button add" data-open="income"><span>＋</span><b>Tambah<br>pemasukan</b></button><button class="action-button minus" data-open="expense"><span>－</span><b>Tambah<br>pengeluaran</b></button><button class="action-button report" data-tab="reports"><span>▤</span><b>Lihat<br>laporan</b></button></section>
 <section class="section-head"><div><h2>Transaksi Terbaru</h2><p>Catatan kas terakhir</p></div><button class="text-button" data-tab="history">Lihat semua</button></section><section class="transaction-list" id="recentList"></section>
 <section class="section-head report-head"><div><h2>Ringkasan Bulanan</h2><p id="monthLabel"></p></div><span class="mini-badge">BULAN INI</span></section><section class="mini-summary"><div><span>Pemasukan</span><b class="green-text" id="reportIn">Rp 0</b></div><div><span>Pengeluaran</span><b class="red-text" id="reportOut">Rp 0</b></div><div><span>Saldo bersih</span><b id="reportNet">Rp 0</b></div></section>
@@ -48,4 +46,4 @@
 <label>Jenis dana<select name="fund_type"><option value="operational">Kas Operasional</option><option value="insurance">Dana Asuransi (terpisah)</option></select></label><label>Keterangan lengkap<textarea name="note" rows="3" placeholder="Contoh: Pembelian BBM untuk operasional penyeberangan" required></textarea></label><label>Jumlah (Rp)<input type="number" name="amount" min="1" inputmode="numeric" required></label><button class="submit-button" type="submit">Simpan Transaksi</button><p class="form-note">Data transaksi disimpan secara online di database KAS DERMAGA.</p></form></dialog>
 <dialog id="simpleDialog"><div class="simple-dialog"><button class="close" id="closeSimple">×</button><h2 id="simpleTitle">Menu</h2><div id="simpleBody"></div></div></dialog>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="app.js?v=20261112-pinnedadmin1"></script></body></html>
+<script src="app.js?v=20261112-admincollapse5"></script></body></html>

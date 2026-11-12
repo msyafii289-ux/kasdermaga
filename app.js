@@ -162,6 +162,16 @@ async function loadAnnouncements() {
   if (error) { console.error('Pemberitahuan:', error); announcements = []; $('#noticePreview').innerHTML = '<div class="empty">Pemberitahuan belum dapat dimuat. Admin perlu menyiapkan tabel pemberitahuan.</div>'; return; }
   announcements = data || []; renderNoticePreview(); renderPinnedAdminMessage();
 }
+document.addEventListener('click', e => {
+  const toggle = e.target.closest('#pinnedAdminToggle');
+  if (!toggle) return;
+  const content = document.querySelector('#pinnedAdminContent');
+  if (!content) return;
+  const collapsed = content.classList.toggle('is-collapsed');
+  toggle.textContent = collapsed ? 'Lihat pesan +' : 'Perkecil −';
+  toggle.setAttribute('aria-expanded', String(!collapsed));
+});
+
 function renderPinnedAdminMessage() {
   const section = $('#pinnedAdminSection');
   const target = $('#pinnedAdminContent');
@@ -170,7 +180,7 @@ function renderPinnedAdminMessage() {
   if (!pinned) { section.hidden = true; target.innerHTML = ''; return; }
   section.hidden = false;
   const date = new Date(pinned.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-  target.innerHTML = `<div class="pinned-admin-body"><span class="pinned-admin-icon">📢</span><div class="pinned-admin-text"><b>${esc(pinned.title)}</b><p>${esc(pinned.message).replace(/\\n/g, '<br>')}</p></div></div><div class="pinned-admin-meta"><span>♙ Admin Dermaga</span><span>▦ ${date}</span></div>`;
+  target.innerHTML = `<div class="pinned-admin-body"><span class="pinned-admin-icon">📢</span><div class="pinned-admin-text"><b>${esc(pinned.title)}</b><p>${esc(pinned.message).replace(/\\n/g, '<br>')}</p></div></div><div class="pinned-admin-meta"><span>♙ Admin Dermaga</span><span>▦ ${date}</span>${isAdmin ? `<button type="button" class="edit-link" data-pinned-edit="${esc(pinned.id)}">Edit Pesan</button>` : ''}</div>`;
 }
 function renderNoticePreview() {
   const target = $('#noticePreview');
@@ -421,6 +431,20 @@ $('#simpleBody').addEventListener('click', async e => {
   const replyForm=e.target.closest('[data-forum-reply-form]');if(replyForm){return;}
 
   const ed = e.target.closest('[data-edit]'), del = e.target.closest('[data-delete]'), approve = e.target.closest('[data-approve]'), hide = e.target.closest('[data-hide]'), pd = e.target.closest('[data-participant-delete]'), sd = e.target.closest('[data-schedule-delete]'), nd = e.target.closest('[data-notice-delete]'), ne = e.target.closest('[data-notice-edit]'), gd=e.target.closest('[data-gallery-delete]'), spd=e.target.closest('[data-sponsor-delete]'), pdel=e.target.closest('[data-purchase-delete]');
+  const pinnedEdit = e.target.closest('[data-pinned-edit]');
+  if (pinnedEdit && isAdmin) {
+    const a = announcements.find(x => String(x.id) === String(pinnedEdit.dataset.pinnedEdit));
+    if (a) {
+      show('Edit Pesan Penting Admin', `<form id="editPinnedAnnouncementForm"><label>Judul<input name="title" required maxlength="120" value="${esc(a.title)}"></label><label>Isi pesan<textarea name="message" rows="5" required maxlength="5000">${esc(a.message)}</textarea></label><label class="check-label"><input type="checkbox" name="is_pinned" ${a.is_pinned?'checked':''}> Sematkan pesan ini</label><button class="submit-button">Simpan perubahan</button></form>`);
+      $('#editPinnedAnnouncementForm').onsubmit = async ev => {
+        ev.preventDefault();
+        const f = ev.currentTarget;
+        const { error } = await db.from('announcements').update({title:f.title.value.trim(), message:f.message.value.trim(), is_pinned:f.is_pinned.checked}).eq('id',a.id);
+        if (error) alert('Gagal menyimpan: '+error.message);
+        else { await loadAnnouncements(); show('Berhasil','Pesan penting admin berhasil diperbarui.'); }
+      };
+    }
+  }
   if (ed) { $('#simpleDialog').close(); openTx('Pemasukan', ed.dataset.edit); }
   if (del && isAdmin && confirm('Hapus transaksi ini?')) { const { error } = await db.from('transactions').delete().eq('id', del.dataset.delete); if (error) alert('Gagal menghapus: ' + error.message); else { await loadTransactions(); showTab('history'); } }
   if (approve && isAdmin) { const { error } = await db.from('comments').update({ status: 'approved' }).eq('id', approve.dataset.approve); if (error) alert(error.message); else renderComments(); }
