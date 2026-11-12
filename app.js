@@ -159,7 +159,7 @@ function renderPolicy() {
 
 async function loadAnnouncements() {
   const { data, error } = await db.from('announcements').select('*').eq('is_published', true).order('is_pinned', { ascending: false }).order('created_at', { ascending: false });
-  if (error) { console.error('Pemberitahuan:', error); announcements = []; $('#noticePreview').innerHTML = '<div class="empty">Pemberitahuan belum dapat dimuat. Admin perlu menyiapkan tabel pemberitahuan.</div>'; return; }
+  if (error) { console.error('Pemberitahuan:', error); announcements = []; renderPinnedAdminMessage(); const preview = $('#noticePreview'); if (preview) preview.innerHTML = '<div class="empty">Pemberitahuan belum dapat dimuat. Admin perlu menyiapkan tabel pemberitahuan.</div>'; return; }
   announcements = data || []; renderNoticePreview(); renderPinnedAdminMessage();
 }
 document.addEventListener('click', e => {
@@ -184,6 +184,7 @@ function renderPinnedAdminMessage() {
 }
 function renderNoticePreview() {
   const target = $('#noticePreview');
+  if (!target) return; // Pratinjau lama memang tidak dipakai di halaman utama.
   const rows = announcements.slice(0, 2);
   target.innerHTML = rows.length ? rows.map(a => `<article class="notice-card"><div class="notice-symbol">${a.is_pinned ? '📌' : '📢'}</div><div class="notice-content"><b>${esc(a.title)}</b><p>${esc(a.message)}</p><small>${new Date(a.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}</small></div></article>`).join('') : '<div class="empty">Belum ada pemberitahuan dari pengelola.</div>';
 }
