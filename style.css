@@ -117,3 +117,34 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 @media (prefers-reduced-motion: reduce) {
   .balance-digit { animation: none; }
 }
+
+/* Penyempurnaan judul KAS DERMAGA */
+.brand-copy strong{
+  display:inline-block;
+  font-family:'Manrope',sans-serif;
+  font-size:clamp(17px,4.8vw,25px);
+  font-weight:800;
+  font-style:italic;
+  letter-spacing:-.8px;
+  line-height:1.05;
+  color:#fff;
+  -webkit-text-stroke:1px #09234f;
+  paint-order:stroke fill;
+  text-shadow:
+    0 2px 0 #09234f,
+    1px 3px 0 #09234f,
+    2px 5px 8px rgba(0,0,0,.72),
+    0 0 12px rgba(255,255,255,.35);
+  position:relative;
+}
+.brand-copy strong::after{
+  content:"";
+  display:block;
+  height:3px;
+  width:92%;
+  margin:3px auto 0;
+  border-radius:8px;
+  background:linear-gradient(90deg,transparent,#ffd54a 18%,#fff4b2 50%,#e5a91c 82%,transparent);
+  box-shadow:0 1px 5px rgba(255,194,42,.65);
+}
+.brand-copy span{font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,.85)}

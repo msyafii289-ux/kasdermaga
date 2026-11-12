@@ -34,9 +34,12 @@ function renderBalanceWithDrop(value) {
   }
   balanceAnimatedOnLoad = true;
   el.setAttribute('aria-label', formatted);
-  el.innerHTML = Array.from(formatted).map((ch, index) => {
+  let digitOrder = 0;
+  el.innerHTML = Array.from(formatted).map(ch => {
     if (/\d/.test(ch)) {
-      return `<span class="balance-digit" style="--drop-delay:${index * 65}ms">${ch}</span>`;
+      const delay = digitOrder * 150;
+      digitOrder += 1;
+      return `<span class="balance-digit" style="--drop-delay:${delay}ms">${ch}</span>`;
     }
     return ch === ' ' ? '&nbsp;' : esc(ch);
   }).join('');
