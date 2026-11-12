@@ -23,9 +23,21 @@ function setStatus(text, good = true) {
 function txHtml(t, editable = false) {
   return `<article class="transaction"><div class="tx-icon ${t.type === 'Pemasukan' ? 'in' : 'out'}">${t.type === 'Pemasukan' ? '↙' : '↗'}</div><div class="tx-info"><b>${esc(t.category)}</b><small>${fmtDate(t.date)} · ${esc(t.note)}</small></div><div class="tx-side"><strong class="tx-amount ${t.type === 'Pemasukan' ? 'in' : 'out'}">${t.type === 'Pemasukan' ? '+' : '−'}${money(t.amount)}</strong>${editable ? `<button class="edit-link" data-edit="${esc(t.id)}">Edit</button> <button class="edit-link danger-link" data-delete="${esc(t.id)}">Hapus</button>` : ''}</div></article>`;
 }
+let balanceAnimatedOnLoad = false;
+function renderBalanceWithDrop(value) {
+  const el = $('#balance');
+  const formatted = money(value);
+  if (balanceAnimatedOnLoad) { el.textContent = formatted; return; }
+  balanceAnimatedOnLoad = true;
+  el.setAttribute('aria-label', formatted);
+  el.innerHTML = Array.from(formatted).map((ch, index) => {
+    if (/\\d/.test(ch)) return `<span class="balance-digit" style="--drop-delay:${index * 65}ms">${ch}</span>`;
+    return ch === ' ' ? '&nbsp;' : esc(ch);
+  }).join('');
+}
 function render() {
   const all = totals(transactions), m = totals(transactions.filter(t => t.date.startsWith(monthKey)));
-  $('#balance').textContent = money(all.in - all.out);
+  renderBalanceWithDrop(all.in - all.out);
   $('#totalIn').textContent = money(m.in); $('#totalOut').textContent = money(m.out);
   $('#reportIn').textContent = money(m.in); $('#reportOut').textContent = money(m.out); $('#reportNet').textContent = money(m.in - m.out);
   $('#monthLabel').textContent = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });

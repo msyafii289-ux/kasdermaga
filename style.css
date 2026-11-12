@@ -99,3 +99,50 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 /* Forum Warga Dermaga */
 .forum-compose{background:#f5f8fc;border:1px solid var(--line);border-radius:14px;padding:12px;margin:12px 0 16px}
 .forum-compose label{margin:8px 0}.forum-feed{display:grid;gap:12px}.forum-post{background:#fff;border:1px solid var(--line);border-radius:15px;padding:12px;box-shadow:0 3px 12px #102d4d08}.forum-post-head{display:flex;align-items:center;gap:9px}.forum-avatar{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;background:#e8f1fb;color:#1d5d94;font-weight:800}.forum-author{display:grid;gap:3px;flex:1;min-width:0}.forum-author b,.forum-reply-main>b{font-size:11px;color:var(--navy)}.forum-author small,.forum-reply-main small{font-size:9px;color:var(--muted)}.forum-content{font-size:12px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink)}.forum-photo{display:block;width:100%;max-height:300px;object-fit:cover;border-radius:11px;margin:8px 0}.reply-photo{max-width:170px;max-height:130px}.forum-actions{display:flex;align-items:center;gap:16px;border-top:1px solid #edf1f5;padding:9px 0;color:var(--muted);font-size:10px}.forum-action{border:0;background:none;color:#52677b;font-weight:700;padding:4px}.forum-action.liked{color:#1768bd}.forum-replies{display:grid;gap:8px}.forum-reply{display:flex;gap:8px;background:#f6f8fb;border-radius:11px;padding:9px}.forum-reply-main{min-width:0;flex:1}.forum-reply-main p{font-size:11px;line-height:1.5;margin:4px 0;white-space:pre-wrap;overflow-wrap:anywhere}.forum-reply-form{display:flex;gap:6px;align-items:center;margin-top:9px}.forum-reply-form input{min-width:0;margin:0;padding:10px;font-size:10px}.forum-reply-form input[name=name]{max-width:95px}.forum-send{border:0;border-radius:9px;background:var(--navy);color:#fff;padding:10px;font-size:10px;font-weight:800;flex:none}
+
+/* Penyempurnaan judul KAS DERMAGA */
+.brand-copy strong{
+  display:inline-block;
+  font-family:'Manrope',sans-serif;
+  font-size:clamp(17px,4.8vw,25px);
+  font-weight:800;
+  font-style:italic;
+  letter-spacing:-.8px;
+  line-height:1.05;
+  color:#fff;
+  -webkit-text-stroke:1px #09234f;
+  paint-order:stroke fill;
+  text-shadow:
+    0 2px 0 #09234f,
+    1px 3px 0 #09234f,
+    2px 5px 8px rgba(0,0,0,.72),
+    0 0 12px rgba(255,255,255,.35);
+  position:relative;
+}
+.brand-copy strong::after{
+  content:"";
+  display:block;
+  height:3px;
+  width:92%;
+  margin:3px auto 0;
+  border-radius:8px;
+  background:linear-gradient(90deg,transparent,#ffd54a 18%,#fff4b2 50%,#e5a91c 82%,transparent);
+  box-shadow:0 1px 5px rgba(255,194,42,.65);
+}
+.brand-copy span{font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,.85)}
+/* Angka saldo jatuh berurutan saat saldo pertama kali dimuat */
+.balance-digit{
+  display:inline-block;
+  animation:balanceDigitDrop .72s cubic-bezier(.2,.8,.25,1) both;
+  animation-delay:var(--drop-delay,0ms);
+  transform-origin:50% 0;
+}
+@keyframes balanceDigitDrop{
+  0%{opacity:0;transform:translateY(-42px) rotateX(75deg);filter:blur(3px)}
+  65%{opacity:1;transform:translateY(5px) rotateX(-8deg);filter:blur(0)}
+  82%{transform:translateY(-2px) rotateX(2deg)}
+  100%{opacity:1;transform:translateY(0) rotateX(0)}
+}
+@media(prefers-reduced-motion:reduce){
+  .balance-digit{animation:none}
+}
