@@ -163,12 +163,30 @@ async function loadAnnouncements() {
   announcements = data || []; renderNoticePreview(); renderPinnedAdminMessage();
 }
 document.addEventListener('click', e => {
+  const pinnedText = e.target.closest('.pinned-admin-text');
+  if (pinnedText) {
+    const content = document.querySelector('#pinnedAdminContent');
+    const toggle = document.querySelector('#pinnedAdminToggle');
+    if (content) {
+      const collapsed = content.classList.toggle('is-collapsed');
+      if (toggle) {
+        toggle.textContent = collapsed ? 'Baca selengkapnya +' : 'Perkecil −';
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+      }
+    }
+    return;
+  }
+  const commentText = e.target.closest('.comment p');
+  if (commentText) {
+    commentText.classList.toggle('is-expanded');
+    return;
+  }
   const toggle = e.target.closest('#pinnedAdminToggle');
   if (!toggle) return;
   const content = document.querySelector('#pinnedAdminContent');
   if (!content) return;
   const collapsed = content.classList.toggle('is-collapsed');
-  toggle.textContent = collapsed ? 'Lihat pesan +' : 'Perkecil −';
+  toggle.textContent = collapsed ? 'Baca selengkapnya +' : 'Perkecil −';
   toggle.setAttribute('aria-expanded', String(!collapsed));
 });
 
