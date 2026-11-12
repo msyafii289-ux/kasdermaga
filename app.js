@@ -88,6 +88,7 @@ async function refreshSession() {
     isAdmin = ownAdmin === true;
   }
   $('#profileBtn').textContent = isAdmin ? 'A' : '↗';
+  const insuranceMenuBtn = $('#insuranceMenuBtn'); if (insuranceMenuBtn) insuranceMenuBtn.hidden = !isAdmin;
   render();
 }
 async function loadCommunityData() {
@@ -284,6 +285,22 @@ async function renderForum(){
  const form=$('#forumPostForm');form.onsubmit=async e=>{e.preventDefault();const f=e.currentTarget,b=f.querySelector('button'),msg=$('#forumPostMessage'),name=f.name.value.trim(),content=f.content.value.trim(),file=f.image.files[0];if(!content&&!file){msg.textContent='Isi pesan atau pilih foto terlebih dahulu.';return;}const last=Number(sessionStorage.getItem('kas_forum_last_post')||0);if(Date.now()-last<30000){msg.textContent='Tunggu 30 detik sebelum mengirim postingan berikutnya.';return;}b.disabled=true;msg.textContent='Mengirim...';try{const image_url=await uploadForumImage(file);const {error}=await db.from('forum_posts').insert({display_name:name,content,image_url});if(error)throw error;sessionStorage.setItem('kas_forum_last_post',String(Date.now()));await renderForum();}catch(err){msg.textContent='Gagal mengirim: '+err.message;b.disabled=false;}};
 }
 
+
+async function renderInventory(){
+ const {data,error}=await db.from('inventory').select('*').order('created_at',{ascending:false});
+ if(error){show('Inventaris Aset Dermaga',`<p class="form-note">Belum dapat memuat inventaris: ${esc(error.message)}. Admin perlu menyiapkan tabel inventaris di Supabase.</p>`);return;}
+ const rows=data||[];
+ const form=isAdmin?`<form id="inventoryForm" class="inline-admin-form"><h3 id="inventoryFormTitle">Tambah aset dermaga</h3><label>Nama barang<input name="item_name" maxlength="160" required placeholder="Contoh: Pelampung keselamatan"></label><div class="form-grid-two"><label>Jumlah<input name="quantity" type="number" min="0.01" step="0.01" required value="1"></label><label>Satuan<input name="unit" maxlength="30" placeholder="buah, unit, set"></label></div><label>Kondisi<select name="item_condition"><option>Baik</option><option>Perlu perbaikan</option><option>Rusak</option></select></label><label>Tanggal diperoleh<input name="acquired_date" type="date"></label><label>Keterangan<textarea name="notes" rows="2" maxlength="1000" placeholder="Lokasi, merek, atau keterangan"></textarea></label><button class="submit-button">Simpan inventaris</button><button type="button" class="edit-link" id="inventoryCancel" hidden>Batal edit</button><p class="form-note" id="inventoryMessage"></p></form>`:'<p class="muted">Daftar aset dan perlengkapan milik dermaga.</p>';
+ const list=rows.length?rows.map(r=>`<article class="purchase-row"><div class="purchase-info"><b>${esc(r.item_name)}</b><small>Jumlah: ${esc(r.quantity)} ${esc(r.unit||'')}</small><small>Kondisi: ${esc(r.item_condition||'Belum dicatat')}${r.acquired_date?' · '+fmtDate(r.acquired_date):''}</small>${r.notes?`<small>${esc(r.notes)}</small>`:''}</div><div class="purchase-side">${isAdmin?`<button class="edit-link" data-inventory-edit="${esc(r.id)}">Edit</button> <button class="edit-link danger-link" data-inventory-delete="${esc(r.id)}">Hapus</button>`:''}</div></article>`).join(''):'<div class="empty">Belum ada aset yang dicatat.</div>';
+ show('Inventaris Aset Dermaga',`${form}<h3>Daftar Inventaris (${rows.length} item)</h3><div class="purchase-list">${list}</div>`);
+ const f=$('#inventoryForm');if(!f)return;
+ let editingId=null;
+ const cancel=()=>{editingId=null;f.reset();f.quantity.value=1;$('#inventoryFormTitle').textContent='Tambah aset dermaga';f.querySelector('.submit-button').textContent='Simpan inventaris';$('#inventoryCancel').hidden=true;};
+ $('#inventoryCancel').onclick=cancel;
+ f.onsubmit=async e=>{e.preventDefault();const b=f.querySelector('.submit-button'),msg=$('#inventoryMessage');b.disabled=true;const payload={item_name:f.item_name.value.trim(),quantity:Number(f.quantity.value),unit:f.unit.value.trim()||null,item_condition:f.item_condition.value,acquired_date:f.acquired_date.value||null,notes:f.notes.value.trim()||null};const result=editingId?await db.from('inventory').update(payload).eq('id',editingId):await db.from('inventory').insert({...payload,created_by:session?.user?.id||null});b.disabled=false;if(result.error){msg.textContent='Gagal menyimpan: '+result.error.message;return;}await renderInventory();};
+ document.querySelectorAll('[data-inventory-edit]').forEach(b=>b.onclick=()=>{const r=rows.find(x=>x.id===b.dataset.inventoryEdit);if(!r)return;editingId=r.id;f.item_name.value=r.item_name;f.quantity.value=r.quantity;f.unit.value=r.unit||'';f.item_condition.value=r.item_condition||'Baik';f.acquired_date.value=r.acquired_date||'';f.notes.value=r.notes||'';$('#inventoryFormTitle').textContent='Edit aset dermaga';f.querySelector('.submit-button').textContent='Simpan perubahan';$('#inventoryCancel').hidden=false;f.scrollIntoView({behavior:'smooth',block:'start'});});
+ document.querySelectorAll('[data-inventory-delete]').forEach(b=>b.onclick=async()=>{if(!confirm('Hapus aset ini dari inventaris?'))return;const {error}=await db.from('inventory').delete().eq('id',b.dataset.inventoryDelete);if(error){alert('Gagal menghapus: '+error.message);return;}await renderInventory();});
+}
 function renderInsurance() {
  const rows=transactions.filter(t=>(t.fund_type||'operational')==='insurance').sort((a,b)=>b.date.localeCompare(a.date));
  const x=rows.reduce((s,t)=>s+(t.type==='Pemasukan'?1:-1)*Number(t.amount),0);
@@ -421,7 +438,8 @@ document.addEventListener('keydown',e=>{const photo=e.target.closest&&e.target.c
 document.querySelectorAll('[data-community]').forEach(b => b.addEventListener('click', async () => {
   const key = b.dataset.community;
   if (key === 'announcements') return renderAnnouncements();
-  if (key === 'insurance') return renderInsurance();
+  if (key === 'insurance') { if (!isAdmin) return; return renderInsurance(); }
+  if (key === 'inventory') return renderInventory();
   if (key === 'gallery') return renderGallery();
   if (key === 'sponsors') return renderSponsors();
   if (key === 'purchases') return renderPurchases();
