@@ -200,3 +200,6 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 /* Semua menu ditampilkan langsung di halaman utama */
 .extra-menu-grid{display:grid !important}
 .more-menu-button{display:none !important}
+
+/* Pastikan tombol bertanda hidden tidak tampil meskipun memiliki aturan display */
+[hidden]{display:none !important}

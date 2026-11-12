@@ -58,6 +58,7 @@ function render() {
   const recent = transactions.filter(t => (t.fund_type || 'operational') === 'operational').sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
   $('#recentList').innerHTML = recent.length ? recent.map(t => txHtml(t)).join('') : '<div class="empty">Belum ada transaksi.</div>';
   $('#adminLabel').textContent = isAdmin ? 'ADMIN AKTIF' : 'PENGUNJUNG';
+  document.querySelectorAll('.quick-actions [data-open="income"], .quick-actions [data-open="expense"]').forEach(b => { b.hidden = !isAdmin; b.disabled = !isAdmin; b.title = isAdmin ? '' : 'Login admin untuk mencatat transaksi'; });
   document.querySelectorAll('[data-open]').forEach(b => { b.disabled = !isAdmin; b.title = isAdmin ? '' : 'Login admin untuk mencatat transaksi'; });
 }
 async function loadTransactions() {
@@ -452,7 +453,16 @@ document.querySelectorAll('[data-community]').forEach(b => b.addEventListener('c
   }
   console.warn('Menu KAS DERMAGA tidak dikenal:', key);
 }));
-$('#allMenusBtn').onclick = () => { const grid=$('#shortcutGrid'); const expanded=grid.classList.toggle('expanded'); $('#allMenusBtn').textContent=expanded?'×':'⋮'; $('#allMenusBtn').setAttribute('aria-expanded',String(expanded)); };
+const allMenusBtn = $('#allMenusBtn');
+if (allMenusBtn) {
+  allMenusBtn.onclick = () => {
+    const grid = $('#shortcutGrid');
+    if (!grid) return;
+    const expanded = grid.classList.toggle('expanded');
+    allMenusBtn.textContent = expanded ? '×' : '⋮';
+    allMenusBtn.setAttribute('aria-expanded', String(expanded));
+  };
+}
 $('#simpleBody').addEventListener('click', async e => {
   const photo = e.target.closest('[data-gallery-open]'); if(photo){openGalleryPhoto(photo.dataset.gallerySrc,photo.dataset.galleryTitle);return;}
   const like=e.target.closest('[data-forum-like]'), delPost=e.target.closest('[data-forum-delete-post]'), delReply=e.target.closest('[data-forum-delete-reply]'), report=e.target.closest('[data-forum-report]');
