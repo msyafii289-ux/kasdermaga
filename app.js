@@ -525,6 +525,29 @@ async function updateVisitorCounter() {
 }
 
 (async function init() {
-  try { await updateVisitorCounter(); await refreshSession(); await loadTransactions(); await loadComments(); await loadAnnouncements(); db.auth.onAuthStateChange(() => { setTimeout(async () => { await refreshSession(); }, 0); }); }
-  catch (err) { console.error('Koneksi awal KAS DERMAGA:', err); setStatus('Koneksi gagal: ' + (err?.message || String(err)).slice(0, 90), false); }
+  // Muat data kas terlebih dahulu. Kegagalan fitur tambahan/admin tidak boleh
+  // menghentikan pembacaan transaksi dan saldo.
+  try {
+    await loadTransactions();
+  } catch (err) {
+    console.error('Koneksi transaksi KAS DERMAGA:', err);
+    setStatus('Gagal memuat transaksi: ' + (err?.message || String(err)).slice(0, 70), false);
+  }
+
+  // Jalankan proses lain secara terpisah agar satu error tidak membatalkan proses lain.
+  updateVisitorCounter().catch(err => console.error('Pengunjung:', err));
+  loadComments().catch(err => console.error('Komentar:', err));
+  loadAnnouncements().catch(err => console.error('Pengumuman:', err));
+  refreshSession().catch(err => {
+    console.error('Pemeriksaan admin:', err);
+    // Pengunjung tetap dapat melihat data; fitur edit tetap dilindungi RLS Supabase.
+    isAdmin = false;
+    render();
+  });
+
+  db.auth.onAuthStateChange(() => {
+    setTimeout(() => {
+      refreshSession().catch(err => console.error('Pembaruan sesi admin:', err));
+    }, 0);
+  });
 })();
