@@ -104,15 +104,16 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 /* Animasi angka saldo: jatuh berurutan saat data pertama kali dimuat */
 .balance-digit {
   display: inline-block;
-  animation: balanceDigitDrop .72s cubic-bezier(.2,.8,.25,1) both;
+  animation: balanceDigitDrop 1.15s cubic-bezier(.2,.8,.25,1) infinite;
   animation-delay: var(--drop-delay, 0ms);
   transform-origin: 50% 0;
+  will-change: transform, opacity;
 }
 @keyframes balanceDigitDrop {
-  0% { opacity: 0; transform: translateY(-42px) rotateX(75deg); filter: blur(3px); }
-  65% { opacity: 1; transform: translateY(5px) rotateX(-8deg); filter: blur(0); }
-  82% { transform: translateY(-2px) rotateX(2deg); }
-  100% { opacity: 1; transform: translateY(0) rotateX(0); }
+  0% { opacity: 0; transform: translateY(-38px) rotateX(65deg); filter: blur(2px); }
+  16% { opacity: 1; transform: translateY(0) rotateX(0); filter: blur(0); }
+  76% { opacity: 1; transform: translateY(0) rotateX(0); filter: blur(0); }
+  100% { opacity: 0; transform: translateY(42px) rotateX(-65deg); filter: blur(2px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .balance-digit { animation: none; }
