@@ -12,39 +12,6 @@ const fmtDate = s => new Date(s + 'T00:00:00').toLocaleDateString('id-ID', { day
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 let transactions = [], comments = [], participants = [], dutySchedule = [], announcements = [], session = null, isAdmin = false, loading = false, sponsors = [], galleryItems = [];
 
-// Suara sambutan: satu kali setiap halaman dibuka. Jika browser menolak autoplay,
-// pemutaran dicoba kembali pada sentuhan/klik pertama pengunjung.
-function playWelcomeVoiceOnce() {
-  if (window.__welcomeVoiceStarted || !('speechSynthesis' in window)) return;
-  window.__welcomeVoiceStarted = true;
-  const text = document.querySelector('.running-text span')?.textContent?.trim();
-  if (!text) return;
-  const speak = () => {
-    if (window.__welcomeVoiceSpoken) return;
-    window.__welcomeVoiceSpoken = true;
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'id-ID';
-    utterance.rate = 0.95;
-    const voices = window.speechSynthesis.getVoices();
-    const indonesianVoice = voices.find(v => /^id(-|_)/i.test(v.lang));
-    if (indonesianVoice) utterance.voice = indonesianVoice;
-    utterance.onerror = () => { window.__welcomeVoiceSpoken = false; };
-    window.speechSynthesis.speak(utterance);
-  };
-  // Autoplay bersuara mungkin diblokir browser sampai ada interaksi pengguna.
-  try { speak(); } catch (_) { window.__welcomeVoiceSpoken = false; }
-  const fallback = () => {
-    if (!window.__welcomeVoiceSpoken) {
-      window.__welcomeVoiceStarted = false;
-      playWelcomeVoiceOnce();
-    }
-    window.removeEventListener('pointerdown', fallback);
-    window.removeEventListener('keydown', fallback);
-  };
-  window.addEventListener('pointerdown', fallback, { once: true });
-  window.addEventListener('keydown', fallback, { once: true });
-}
-
 function totals(rows) {
   rows = rows.filter(t => (t.fund_type || 'operational') === 'operational');
   return rows.reduce((x, t) => { x[t.type === 'Pemasukan' ? 'in' : 'out'] += Number(t.amount); return x; }, { in: 0, out: 0 });
@@ -81,6 +48,10 @@ function renderBalanceWithDrop(value) {
 function render() {
   const all = totals(transactions), m = totals(transactions.filter(t => t.date.startsWith(monthKey)));
   renderBalanceWithDrop(all.in - all.out);
+  const insuranceRows = transactions.filter(t => t.fund_type === 'insurance');
+  const insuranceBalance = insuranceRows.reduce((sum, t) => sum + (t.type === 'Pemasukan' ? 1 : -1) * Number(t.amount), 0);
+  const insuranceBalanceEl = $('#insuranceBalance');
+  if (insuranceBalanceEl) insuranceBalanceEl.textContent = money(insuranceBalance);
   $('#totalIn').textContent = money(m.in); $('#totalOut').textContent = money(m.out);
   $('#reportIn').textContent = money(m.in); $('#reportOut').textContent = money(m.out); $('#reportNet').textContent = money(m.in - m.out);
   $('#monthLabel').textContent = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
@@ -196,15 +167,6 @@ async function loadAnnouncements() {
   announcements = data || []; renderNoticePreview(); renderPinnedAdminMessage();
 }
 document.addEventListener('click', e => {
-  const readMore = e.target.closest('#pinnedAdminReadMore');
-  if (readMore) {
-    const text = document.querySelector('#pinnedAdminText');
-    if (!text) return;
-    const expanded = text.classList.toggle('is-expanded');
-    readMore.textContent = expanded ? 'Tutup' : 'Baca Selengkapnya';
-    readMore.setAttribute('aria-expanded', String(expanded));
-    return;
-  }
   const toggle = e.target.closest('#pinnedAdminToggle');
   if (!toggle) return;
   const content = document.querySelector('#pinnedAdminContent');
@@ -222,7 +184,7 @@ function renderPinnedAdminMessage() {
   if (!pinned) { section.hidden = true; target.innerHTML = ''; return; }
   section.hidden = false;
   const date = new Date(pinned.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-  target.innerHTML = `<div class="pinned-admin-body"><span class="pinned-admin-icon">📢</span><div class="pinned-admin-text" id="pinnedAdminText"><b>${esc(pinned.title)}</b><p>${esc(pinned.message).replace(/\\n/g, '<br>')}</p><button type="button" class="pinned-read-more" id="pinnedAdminReadMore" aria-expanded="false">Baca Selengkapnya</button></div></div><div class="pinned-admin-meta"><span>♙ Admin Dermaga</span><span>▦ ${date}</span>${isAdmin ? `<button type="button" class="edit-link" data-pinned-edit="${esc(pinned.id)}">Edit Pesan</button>` : ''}</div>`;
+  target.innerHTML = `<div class="pinned-admin-body"><span class="pinned-admin-icon">📢</span><div class="pinned-admin-text"><b>${esc(pinned.title)}</b><p>${esc(pinned.message).replace(/\\n/g, '<br>')}</p></div></div><div class="pinned-admin-meta"><span>♙ Admin Dermaga</span><span>▦ ${date}</span>${isAdmin ? `<button type="button" class="edit-link" data-pinned-edit="${esc(pinned.id)}">Edit Pesan</button>` : ''}</div>`;
 }
 function renderNoticePreview() {
   const target = $('#noticePreview');
@@ -534,8 +496,6 @@ async function updateVisitorCounter() {
     display.textContent = 'Belum tersedia';
   }
 }
-
-playWelcomeVoiceOnce();
 
 (async function init() {
   try { await updateVisitorCounter(); await refreshSession(); await loadTransactions(); await loadComments(); await loadAnnouncements(); db.auth.onAuthStateChange(() => { setTimeout(async () => { await refreshSession(); }, 0); }); }

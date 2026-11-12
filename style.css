@@ -188,7 +188,6 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 #pinnedAdminContent.is-collapsed{display:none}
 .pinned-admin-content{transition:padding .2s ease}
 
-/* Tombol baca selengkapnya untuk Pesan Penting Admin */
-.pinned-admin-text p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.pinned-admin-text.is-expanded p{display:block;-webkit-line-clamp:unset;overflow:visible}
-.pinned-read-more{display:inline-block;margin-top:8px;padding:5px 10px;border:1px solid #c9d6e7;border-radius:8px;background:#fff;color:#064b89;font-size:12px;font-weight:700;cursor:pointer}
+/* Saldo Dana Asuransi: kartu terpisah dari kas operasional */
+.insurance-balance-card{margin-top:12px;border:1px solid rgba(30,120,90,.22)}
+.insurance-balance-card .balance-head span:last-child{color:#16734d}
