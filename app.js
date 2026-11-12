@@ -12,6 +12,39 @@ const fmtDate = s => new Date(s + 'T00:00:00').toLocaleDateString('id-ID', { day
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 let transactions = [], comments = [], participants = [], dutySchedule = [], announcements = [], session = null, isAdmin = false, loading = false, sponsors = [], galleryItems = [];
 
+// Suara sambutan: satu kali setiap halaman dibuka. Jika browser menolak autoplay,
+// pemutaran dicoba kembali pada sentuhan/klik pertama pengunjung.
+function playWelcomeVoiceOnce() {
+  if (window.__welcomeVoiceStarted || !('speechSynthesis' in window)) return;
+  window.__welcomeVoiceStarted = true;
+  const text = document.querySelector('.running-text span')?.textContent?.trim();
+  if (!text) return;
+  const speak = () => {
+    if (window.__welcomeVoiceSpoken) return;
+    window.__welcomeVoiceSpoken = true;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'id-ID';
+    utterance.rate = 0.95;
+    const voices = window.speechSynthesis.getVoices();
+    const indonesianVoice = voices.find(v => /^id(-|_)/i.test(v.lang));
+    if (indonesianVoice) utterance.voice = indonesianVoice;
+    utterance.onerror = () => { window.__welcomeVoiceSpoken = false; };
+    window.speechSynthesis.speak(utterance);
+  };
+  // Autoplay bersuara mungkin diblokir browser sampai ada interaksi pengguna.
+  try { speak(); } catch (_) { window.__welcomeVoiceSpoken = false; }
+  const fallback = () => {
+    if (!window.__welcomeVoiceSpoken) {
+      window.__welcomeVoiceStarted = false;
+      playWelcomeVoiceOnce();
+    }
+    window.removeEventListener('pointerdown', fallback);
+    window.removeEventListener('keydown', fallback);
+  };
+  window.addEventListener('pointerdown', fallback, { once: true });
+  window.addEventListener('keydown', fallback, { once: true });
+}
+
 function totals(rows) {
   rows = rows.filter(t => (t.fund_type || 'operational') === 'operational');
   return rows.reduce((x, t) => { x[t.type === 'Pemasukan' ? 'in' : 'out'] += Number(t.amount); return x; }, { in: 0, out: 0 });
@@ -492,6 +525,8 @@ async function updateVisitorCounter() {
     display.textContent = 'Belum tersedia';
   }
 }
+
+playWelcomeVoiceOnce();
 
 (async function init() {
   try { await updateVisitorCounter(); await refreshSession(); await loadTransactions(); await loadComments(); await loadAnnouncements(); db.auth.onAuthStateChange(() => { setTimeout(async () => { await refreshSession(); }, 0); }); }
