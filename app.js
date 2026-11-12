@@ -167,6 +167,15 @@ async function loadAnnouncements() {
   announcements = data || []; renderNoticePreview(); renderPinnedAdminMessage();
 }
 document.addEventListener('click', e => {
+  const readMore = e.target.closest('#pinnedAdminReadMore');
+  if (readMore) {
+    const text = document.querySelector('#pinnedAdminText');
+    if (!text) return;
+    const expanded = text.classList.toggle('is-expanded');
+    readMore.textContent = expanded ? 'Tutup' : 'Baca Selengkapnya';
+    readMore.setAttribute('aria-expanded', String(expanded));
+    return;
+  }
   const toggle = e.target.closest('#pinnedAdminToggle');
   if (!toggle) return;
   const content = document.querySelector('#pinnedAdminContent');
@@ -184,7 +193,7 @@ function renderPinnedAdminMessage() {
   if (!pinned) { section.hidden = true; target.innerHTML = ''; return; }
   section.hidden = false;
   const date = new Date(pinned.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-  target.innerHTML = `<div class="pinned-admin-body"><span class="pinned-admin-icon">📢</span><div class="pinned-admin-text"><b>${esc(pinned.title)}</b><p>${esc(pinned.message).replace(/\\n/g, '<br>')}</p></div></div><div class="pinned-admin-meta"><span>♙ Admin Dermaga</span><span>▦ ${date}</span>${isAdmin ? `<button type="button" class="edit-link" data-pinned-edit="${esc(pinned.id)}">Edit Pesan</button>` : ''}</div>`;
+  target.innerHTML = `<div class="pinned-admin-body"><span class="pinned-admin-icon">📢</span><div class="pinned-admin-text" id="pinnedAdminText"><b>${esc(pinned.title)}</b><p>${esc(pinned.message).replace(/\\n/g, '<br>')}</p><button type="button" class="pinned-read-more" id="pinnedAdminReadMore" aria-expanded="false">Baca Selengkapnya</button></div></div><div class="pinned-admin-meta"><span>♙ Admin Dermaga</span><span>▦ ${date}</span>${isAdmin ? `<button type="button" class="edit-link" data-pinned-edit="${esc(pinned.id)}">Edit Pesan</button>` : ''}</div>`;
 }
 function renderNoticePreview() {
   const target = $('#noticePreview');
