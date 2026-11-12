@@ -105,7 +105,7 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .balance-digit {
   display: inline-block;
   opacity: 0;
-  animation: balanceDigitDrop 1.35s cubic-bezier(.2,.8,.25,1) infinite;
+  animation: balanceDigitDrop 4.8s cubic-bezier(.18,.7,.25,1) infinite;
   animation-delay: var(--drop-delay, 0ms);
   transform-origin: 50% 0;
   will-change: transform, opacity;

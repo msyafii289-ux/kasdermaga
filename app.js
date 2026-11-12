@@ -37,7 +37,7 @@ function renderBalanceWithDrop(value) {
   let digitOrder = 0;
   el.innerHTML = Array.from(formatted).map(ch => {
     if (/[0-9]/.test(ch)) {
-      const delay = digitOrder * 180;
+      const delay = digitOrder * 1100;
       digitOrder += 1;
       return `<span class="balance-digit" style="--drop-delay:${delay}ms">${ch}</span>`;
     }
