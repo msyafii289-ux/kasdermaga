@@ -160,7 +160,17 @@ function renderPolicy() {
 async function loadAnnouncements() {
   const { data, error } = await db.from('announcements').select('*').eq('is_published', true).order('is_pinned', { ascending: false }).order('created_at', { ascending: false });
   if (error) { console.error('Pemberitahuan:', error); announcements = []; $('#noticePreview').innerHTML = '<div class="empty">Pemberitahuan belum dapat dimuat. Admin perlu menyiapkan tabel pemberitahuan.</div>'; return; }
-  announcements = data || []; renderNoticePreview();
+  announcements = data || []; renderNoticePreview(); renderPinnedAdminMessage();
+}
+function renderPinnedAdminMessage() {
+  const section = $('#pinnedAdminSection');
+  const target = $('#pinnedAdminContent');
+  if (!section || !target) return;
+  const pinned = announcements.find(a => a.is_pinned && a.is_published);
+  if (!pinned) { section.hidden = true; target.innerHTML = ''; return; }
+  section.hidden = false;
+  const date = new Date(pinned.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  target.innerHTML = `<div class="pinned-admin-body"><span class="pinned-admin-icon">📢</span><div class="pinned-admin-text"><b>${esc(pinned.title)}</b><p>${esc(pinned.message).replace(/\\n/g, '<br>')}</p></div></div><div class="pinned-admin-meta"><span>♙ Admin Dermaga</span><span>▦ ${date}</span></div>`;
 }
 function renderNoticePreview() {
   const target = $('#noticePreview');
