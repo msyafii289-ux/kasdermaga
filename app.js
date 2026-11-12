@@ -529,6 +529,21 @@ async function updateVisitorCounter() {
 }
 
 (async function init() {
-  try { await updateVisitorCounter(); await refreshSession(); await loadTransactions(); await loadComments(); await loadAnnouncements(); db.auth.onAuthStateChange(() => { setTimeout(async () => { await refreshSession(); }, 0); }); }
-  catch (err) { console.error('Koneksi awal KAS DERMAGA:', err); setStatus('Koneksi gagal: ' + (err?.message || String(err)).slice(0, 90), false); }
+  // Jangan biarkan penghitung pengunjung atau pemeriksaan admin menahan pemuatan saldo.
+  // Data transaksi dimuat lebih dahulu agar saldo segera tampil.
+  updateVisitorCounter();
+  db.auth.onAuthStateChange(() => {
+    setTimeout(async () => {
+      try { await refreshSession(); }
+      catch (err) { console.error('Pemeriksaan sesi admin:', err); }
+    }, 0);
+  });
+  try {
+    await loadTransactions();
+  } catch (err) {
+    console.error('Gagal memuat transaksi KAS DERMAGA:', err);
+    setStatus('Koneksi gagal memuat transaksi', false);
+  }
+  // Bagian lain dimuat terpisah agar kegagalannya tidak menghambat saldo.
+  Promise.allSettled([refreshSession(), loadComments(), loadAnnouncements()]);
 })();
