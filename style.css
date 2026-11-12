@@ -196,3 +196,12 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .pinned-admin-text p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .pinned-admin-text.is-expanded p{display:block;-webkit-line-clamp:unset;overflow:visible}
 .pinned-read-more{display:inline-block;margin-top:8px;padding:5px 10px;border:1px solid #c9d6e7;border-radius:8px;background:#fff;color:#064b89;font-size:12px;font-weight:700;cursor:pointer}
+
+/* Menu layanan ditampilkan langsung di halaman utama tanpa tombol titik tiga */
+.extra-menu-grid{display:grid !important}
+.extra-menu .section-head{align-items:center}
+.more-menu-button{display:none !important}
+/* Tombol pencatatan transaksi disembunyikan untuk pengunjung */
+.quick-actions [data-open="income"][hidden],
+.quick-actions [data-open="expense"][hidden],
+.bottom-nav .nav-item.center[hidden]{display:none !important}

@@ -58,7 +58,11 @@ function render() {
   const recent = transactions.filter(t => (t.fund_type || 'operational') === 'operational').sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
   $('#recentList').innerHTML = recent.length ? recent.map(t => txHtml(t)).join('') : '<div class="empty">Belum ada transaksi.</div>';
   $('#adminLabel').textContent = isAdmin ? 'ADMIN AKTIF' : 'PENGUNJUNG';
-  document.querySelectorAll('[data-open]').forEach(b => { b.disabled = !isAdmin; b.title = isAdmin ? '' : 'Login admin untuk mencatat transaksi'; });
+  document.querySelectorAll('[data-open]').forEach(b => {
+    b.disabled = !isAdmin;
+    b.title = isAdmin ? '' : 'Login admin untuk mencatat transaksi';
+    if (b.matches('.quick-actions [data-open="income"], .quick-actions [data-open="expense"], .bottom-nav .nav-item.center')) b.hidden = !isAdmin;
+  });
 }
 async function loadTransactions() {
   const { data, error } = await db.from('transactions').select('*').order('transaction_date', { ascending: false });
