@@ -163,30 +163,12 @@ async function loadAnnouncements() {
   announcements = data || []; renderNoticePreview(); renderPinnedAdminMessage();
 }
 document.addEventListener('click', e => {
-  const pinnedText = e.target.closest('.pinned-admin-text');
-  if (pinnedText) {
-    const content = document.querySelector('#pinnedAdminContent');
-    const toggle = document.querySelector('#pinnedAdminToggle');
-    if (content) {
-      const collapsed = content.classList.toggle('is-collapsed');
-      if (toggle) {
-        toggle.textContent = collapsed ? 'Baca selengkapnya +' : 'Perkecil −';
-        toggle.setAttribute('aria-expanded', String(!collapsed));
-      }
-    }
-    return;
-  }
-  const commentText = e.target.closest('.comment p');
-  if (commentText) {
-    commentText.classList.toggle('is-expanded');
-    return;
-  }
   const toggle = e.target.closest('#pinnedAdminToggle');
   if (!toggle) return;
   const content = document.querySelector('#pinnedAdminContent');
   if (!content) return;
   const collapsed = content.classList.toggle('is-collapsed');
-  toggle.textContent = collapsed ? 'Baca selengkapnya +' : 'Perkecil −';
+  toggle.textContent = collapsed ? 'Lihat pesan +' : 'Perkecil −';
   toggle.setAttribute('aria-expanded', String(!collapsed));
 });
 
@@ -209,11 +191,11 @@ async function renderAnnouncements() {
   const { data, error } = await db.from('announcements').select('*').order('is_pinned', { ascending: false }).order('created_at', { ascending: false });
   if (error) { show('Pemberitahuan', '<div class="empty">Tabel pemberitahuan belum disiapkan. Jalankan SQL pengaturan pemberitahuan terlebih dahulu.</div>'); return; }
   announcements = (data || []).filter(a => a.is_published || isAdmin);
-  const form = isAdmin ? `<form id="announcementForm" class="inline-admin-form"><h3>Buat pemberitahuan</h3><label>Judul<input name="title" maxlength="120" required placeholder="Contoh: Informasi rapat peserta"></label><label>Isi pemberitahuan<textarea name="message" rows="4" maxlength="5000" required placeholder="Tuliskan informasi untuk warga..."></textarea></label><label class="check-label"><input type="checkbox" name="is_pinned"> Sematkan sebagai informasi penting</label><button class="submit-button">Terbitkan pemberitahuan</button><p class="form-note" id="announcementMessage"></p></form>` : '<p class="muted">Informasi resmi dari pengelola tambangan.</p>';
+  const form = isAdmin ? `<form id="announcementForm" class="inline-admin-form"><h3>Buat pemberitahuan</h3><label>Judul<input name="title" maxlength="120" required placeholder="Contoh: Informasi rapat peserta"></label><label>Isi pemberitahuan<textarea name="message" rows="4" maxlength="5000" required placeholder="Tuliskan informasi untuk warga..."></textarea></label><label class="check-label"><input type="checkbox" name="is_pinned"> Sematkan di menu utama</label><label class="check-label"><input type="checkbox" name="is_published" checked> Publikasikan agar dapat dibaca warga</label><button class="submit-button">Terbitkan pemberitahuan</button><p class="form-note" id="announcementMessage"></p></form>` : '<p class="muted">Informasi resmi dari pengelola tambangan.</p>';
   const list = announcements.length ? announcements.map(a => `<article class="notice-card full-notice"><div class="notice-symbol">${a.is_pinned ? '📌' : '📢'}</div><div class="notice-content"><b>${esc(a.title)}</b><p>${esc(a.message).replace(/\\n/g,'<br>')}</p><small>${new Date(a.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}${a.is_pinned ? ' · Informasi penting' : ''}</small>${isAdmin ? `<div><button class="edit-link" data-notice-edit="${esc(a.id)}">Edit</button><button class="edit-link danger-link" data-notice-delete="${esc(a.id)}">Hapus</button>${a.is_published ? '' : '<span class="form-note"> · Draft</span>'}</div>` : ''}</div></article>`).join('') : '<div class="empty">Belum ada pemberitahuan.</div>';
   show('Pemberitahuan', `${form}<div class="notice-list">${list}</div>`);
   const f = $('#announcementForm');
-  if (f) f.onsubmit = async e => { e.preventDefault(); const btn=f.querySelector('button'), msg=$('#announcementMessage'); btn.disabled=true; btn.textContent='Menerbitkan...'; const {error}=await db.from('announcements').insert({title:f.title.value.trim(),message:f.message.value.trim(),is_pinned:f.is_pinned.checked,is_published:true,created_by:session.user.id}); btn.disabled=false; btn.textContent='Terbitkan pemberitahuan'; if(error){msg.textContent='Gagal menerbitkan: '+error.message;return;} await loadAnnouncements(); await renderAnnouncements(); };
+  if (f) f.onsubmit = async e => { e.preventDefault(); const btn=f.querySelector('button'), msg=$('#announcementMessage'); btn.disabled=true; btn.textContent='Menerbitkan...'; const {error}=await db.from('announcements').insert({title:f.title.value.trim(),message:f.message.value.trim(),is_pinned:f.is_pinned.checked,is_published:f.is_published.checked,created_by:session.user.id}); btn.disabled=false; btn.textContent='Terbitkan pemberitahuan'; if(error){msg.textContent='Gagal menerbitkan: '+error.message;return;} await loadAnnouncements(); await renderAnnouncements(); };
 }
 
 function openTx(type = 'Pemasukan', id = null) {
@@ -512,5 +494,5 @@ async function updateVisitorCounter() {
 
 (async function init() {
   try { await updateVisitorCounter(); await refreshSession(); await loadTransactions(); await loadComments(); await loadAnnouncements(); db.auth.onAuthStateChange(() => { setTimeout(async () => { await refreshSession(); }, 0); }); }
-  catch (err) { console.error(err); setStatus('Belum dapat terhubung', false); }
+  catch (err) { console.error('Koneksi awal KAS DERMAGA:', err); setStatus('Koneksi gagal: ' + (err?.message || String(err)).slice(0, 90), false); }
 })();
