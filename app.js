@@ -27,14 +27,21 @@ let balanceAnimatedOnLoad = false;
 function renderBalanceWithDrop(value) {
   const el = $('#balance');
   const formatted = money(value);
-  if (balanceAnimatedOnLoad) { el.textContent = formatted; return; }
+  if (!el) return;
+  if (balanceAnimatedOnLoad) {
+    el.textContent = formatted;
+    return;
+  }
   balanceAnimatedOnLoad = true;
   el.setAttribute('aria-label', formatted);
   el.innerHTML = Array.from(formatted).map((ch, index) => {
-    if (/\\d/.test(ch)) return `<span class="balance-digit" style="--drop-delay:${index * 65}ms">${ch}</span>`;
+    if (/\d/.test(ch)) {
+      return `<span class="balance-digit" style="--drop-delay:${index * 65}ms">${ch}</span>`;
+    }
     return ch === ' ' ? '&nbsp;' : esc(ch);
   }).join('');
 }
+
 function render() {
   const all = totals(transactions), m = totals(transactions.filter(t => t.date.startsWith(monthKey)));
   renderBalanceWithDrop(all.in - all.out);
