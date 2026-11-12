@@ -105,15 +105,15 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .balance-digit {
   display: inline-block;
   opacity: 0;
-  animation: balanceDigitDrop 4.8s cubic-bezier(.18,.7,.25,1) infinite;
+  animation: balanceDigitDrop 35s cubic-bezier(.18,.7,.25,1) infinite;
   animation-delay: var(--drop-delay, 0ms);
   transform-origin: 50% 0;
   will-change: transform, opacity;
 }
 @keyframes balanceDigitDrop {
   0% { opacity: 0; transform: translateY(-44px) rotateX(70deg); filter: blur(2px); }
-  22% { opacity: 1; transform: translateY(0) rotateX(0); filter: blur(0); }
-  72% { opacity: 1; transform: translateY(0) rotateX(0); filter: blur(0); }
+  14% { opacity: 1; transform: translateY(0) rotateX(0); filter: blur(0); }
+  88% { opacity: 1; transform: translateY(0) rotateX(0); filter: blur(0); }
   100% { opacity: 0; transform: translateY(44px) rotateX(-70deg); filter: blur(2px); }
 }
 
