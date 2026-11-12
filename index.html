@@ -27,10 +27,11 @@
   <div class="extra-menu-grid" id="shortcutGrid">
     <button class="community-card" data-community="policy"><span>📜</span><div><b>Syarat & Kebijakan</b><small>Ketentuan tambangan</small></div><strong>›</strong></button>
     <button class="community-card" data-community="announcements"><span>📢</span><div><b>Pemberitahuan</b><small>Informasi dari pengelola</small></div><strong>›</strong></button>
-    <button class="community-card" data-community="insurance"><span>🛡️</span><div><b>Dana Asuransi</b><small>Dana khusus terpisah</small></div><strong>›</strong></button>
+    <button class="community-card" data-community="insurance" id="insuranceMenuBtn" hidden><span>🛡️</span><div><b>Dana Asuransi</b><small>Dana khusus terpisah</small></div><strong>›</strong></button>
     <button class="community-card" data-community="gallery"><span>🖼️</span><div><b>Galeri Foto</b><small>Dokumentasi kegiatan</small></div><strong>›</strong></button>
     <button class="community-card" data-community="sponsors"><span>🤝</span><div><b>Sponsor & Iklan</b><small>Promosi usaha warga</small></div><strong>›</strong></button>
     <button class="community-card" data-community="purchases"><span>🛒</span><div><b>Daftar Pembelian</b><small>Catatan belanja dan bukti nota</small></div><strong>›</strong></button>
+    <button class="community-card" data-community="inventory"><span>🧰</span><div><b>Inventaris Aset Dermaga</b><small>Daftar barang milik dermaga</small></div><strong>›</strong></button>
     <button class="community-card" data-community="mosque"><span>🕌</span><div><b>Infak & Wakaf Masjid</b><small>QRIS dan laporan penyerahan dana</small></div><strong>›</strong></button>
     <button class="community-card" data-community="forum"><span>💬</span><div><b>Forum Warga Dermaga</b><small>Diskusi, foto, suka, dan balasan warga</small></div><strong>›</strong></button>
   </div>
@@ -46,4 +47,4 @@
 <label>Jenis dana<select name="fund_type"><option value="operational">Kas Operasional</option><option value="insurance">Dana Asuransi (terpisah)</option></select></label><label>Keterangan lengkap<textarea name="note" rows="3" placeholder="Contoh: Pembelian BBM untuk operasional penyeberangan" required></textarea></label><label>Jumlah (Rp)<input type="number" name="amount" min="1" inputmode="numeric" required></label><button class="submit-button" type="submit">Simpan Transaksi</button><p class="form-note">Data transaksi disimpan secara online di database KAS DERMAGA.</p></form></dialog>
 <dialog id="simpleDialog"><div class="simple-dialog"><button class="close" id="closeSimple">×</button><h2 id="simpleTitle">Menu</h2><div id="simpleBody"></div></div></dialog>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="app.js?v=20261112-insurance-readmore2"></script></body></html>
+<script src="app.js?v=20261112-inventory1"></script></body></html>
