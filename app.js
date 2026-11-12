@@ -23,21 +23,21 @@ function setStatus(text, good = true) {
 function txHtml(t, editable = false) {
   return `<article class="transaction"><div class="tx-icon ${t.type === 'Pemasukan' ? 'in' : 'out'}">${t.type === 'Pemasukan' ? '↙' : '↗'}</div><div class="tx-info"><b>${esc(t.category)}</b><small>${fmtDate(t.date)} · ${esc(t.note)}</small></div><div class="tx-side"><strong class="tx-amount ${t.type === 'Pemasukan' ? 'in' : 'out'}">${t.type === 'Pemasukan' ? '+' : '−'}${money(t.amount)}</strong>${editable ? `<button class="edit-link" data-edit="${esc(t.id)}">Edit</button> <button class="edit-link danger-link" data-delete="${esc(t.id)}">Hapus</button>` : ''}</div></article>`;
 }
-let balanceAnimatedOnLoad = false;
+let lastAnimatedBalanceText = null;
 function renderBalanceWithDrop(value) {
   const el = $('#balance');
   const formatted = money(value);
   if (!el) return;
-  if (balanceAnimatedOnLoad) {
-    el.textContent = formatted;
-    return;
-  }
-  balanceAnimatedOnLoad = true;
+
+  // Jangan mengulang animasi pada setiap render kecil; ulangi hanya jika saldo berubah.
+  if (formatted === lastAnimatedBalanceText) return;
+  lastAnimatedBalanceText = formatted;
   el.setAttribute('aria-label', formatted);
+
   let digitOrder = 0;
   el.innerHTML = Array.from(formatted).map(ch => {
-    if (/\d/.test(ch)) {
-      const delay = digitOrder * 150;
+    if (/\\d/.test(ch)) {
+      const delay = digitOrder * 180;
       digitOrder += 1;
       return `<span class="balance-digit" style="--drop-delay:${delay}ms">${ch}</span>`;
     }
