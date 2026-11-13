@@ -203,3 +203,75 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 
 /* Pastikan tombol bertanda hidden tidak tampil meskipun memiliki aturan display */
 [hidden]{display:none !important}
+
+
+/* Perbaikan responsif dialog dan riwayat pembelian */
+#simpleDialog{
+  box-sizing:border-box;
+  width:min(440px, calc(100vw - 24px));
+  max-width:calc(100vw - 24px);
+  max-height:calc(100dvh - 24px);
+  padding:0;
+  overflow-x:hidden;
+}
+#simpleDialog .simple-dialog{
+  box-sizing:border-box;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+}
+#simpleBody{
+  box-sizing:border-box;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  overflow-x:hidden;
+}
+#simpleBody .inline-admin-form,
+#simpleBody .purchase-list,
+#simpleBody .purchase-row{
+  box-sizing:border-box;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+}
+#simpleBody .purchase-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(104px,34%);
+  align-items:start;
+  gap:10px;
+}
+#simpleBody .purchase-info{
+  min-width:0;
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+#simpleBody .purchase-side{
+  box-sizing:border-box;
+  min-width:0;
+  max-width:100%;
+  white-space:normal;
+  text-align:right;
+  justify-items:end;
+  overflow-wrap:anywhere;
+}
+#simpleBody .purchase-side strong{
+  max-width:100%;
+  font-size:clamp(12px, 3.5vw, 15px);
+  line-height:1.35;
+  overflow-wrap:anywhere;
+}
+#simpleBody input,
+#simpleBody select,
+#simpleBody textarea{
+  box-sizing:border-box;
+  max-width:100%;
+  min-width:0;
+}
+@media(max-width:380px){
+  #simpleBody .purchase-row{
+    grid-template-columns:minmax(0,1fr) minmax(92px,36%);
+    gap:7px;
+    padding:10px;
+  }
+}
