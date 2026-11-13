@@ -275,3 +275,32 @@ button:disabled { opacity: .55; cursor: not-allowed; }
     padding:10px;
   }
 }
+
+
+/* Statistik laporan - responsif untuk HP dan desktop */
+.stats-report{display:grid;gap:14px}
+.stats-period{margin:0;color:var(--muted,#687386);font-size:13px}
+.stats-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.stats-card{min-width:0;padding:13px;border:1px solid var(--line,#e5eaf0);border-radius:13px;background:var(--surface,#fff);display:grid;gap:8px}
+.stats-card span,.stats-total span{font-size:12px;color:var(--muted,#687386)}
+.stats-card b{font-size:clamp(15px,3.5vw,19px);overflow-wrap:anywhere}
+.stats-panel{border:1px solid var(--line,#e5eaf0);border-radius:14px;padding:14px;background:var(--surface,#fff);min-width:0}
+.stats-panel h3{font-size:15px;margin:0 0 12px}
+.stats-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted,#687386);margin-bottom:10px}
+.stats-legend span{display:flex;align-items:center;gap:5px}
+.stats-legend i{width:9px;height:9px;border-radius:3px;display:inline-block}
+.legend-in{background:#16a36a}.legend-out{background:#e05b61}
+.stats-chart{height:150px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;align-items:end;border-bottom:1px solid var(--line,#e5eaf0);padding:0 2px}
+.stat-chart-month{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:end;gap:7px;min-width:0}
+.stat-bars{height:125px;width:100%;display:flex;align-items:end;justify-content:center;gap:4px}
+.stat-bar-in,.stat-bar-out{width:min(14px,35%);min-height:3px;border-radius:4px 4px 0 0;display:block}
+.stat-bar-in{background:#16a36a}.stat-bar-out{background:#e05b61}
+.stat-chart-month small{font-size:10px;color:var(--muted,#687386)}
+.stats-month-list{display:grid;gap:0}
+.stat-month-row{display:grid;grid-template-columns:1fr 1.2fr 1.2fr 1fr;gap:6px;align-items:center;padding:10px 0;border-top:1px solid var(--line,#e5eaf0);font-size:11px}
+.stat-month-row:first-child{border-top:0}.stat-month-row span,.stat-month-row strong{text-align:right;overflow-wrap:anywhere}
+.stats-total{display:grid;grid-template-columns:1fr auto;gap:9px;padding:14px;border-radius:13px;background:var(--soft,#f5f7fa)}
+.stats-total b{text-align:right;overflow-wrap:anywhere}
+.stats-note{font-size:11px;color:var(--muted,#687386);line-height:1.5;margin:0}
+@media(min-width:700px){.stats-cards{grid-template-columns:repeat(4,minmax(0,1fr))}.stats-card{padding:16px}.stats-panel{padding:18px}.stats-chart{height:190px}.stat-bars{height:160px}}
+@media(max-width:380px){.stats-card{padding:10px}.stat-month-row{grid-template-columns:.8fr 1.2fr 1.2fr 1fr;font-size:10px;gap:3px}.stats-chart{gap:4px}}

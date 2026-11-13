@@ -255,7 +255,38 @@ function showTab(tab) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === tab));
   if (tab === 'home') return;
   if (tab === 'history') { const operational = transactions.filter(t => (t.fund_type || 'operational') === 'operational'); show('Riwayat Transaksi', operational.length ? [...operational].sort((a, b) => b.date.localeCompare(a.date)).map(t => txHtml(t, isAdmin)).join('') : '<p>Belum ada transaksi.</p>'); return; }
-  if (tab === 'reports') { const x = totals(transactions.filter(t => t.date.startsWith(monthKey))), all = totals(transactions); show('Laporan Bulan Ini', `<p>Periode: <b>${esc($('#monthLabel').textContent)}</b></p><p>Total pemasukan: <b class="green-text">${money(x.in)}</b></p><p>Total pengeluaran: <b class="red-text">${money(x.out)}</b></p><p>Saldo bersih bulan ini: <b>${money(x.in - x.out)}</b></p><hr><p>Saldo keseluruhan: <b>${money(all.in - all.out)}</b></p><p>Jumlah transaksi: <b>${transactions.length}</b></p><button class="submit-button" id="exportCsv">Unduh laporan CSV</button>`); $('#exportCsv').onclick = exportCsv; return; }
+  if (tab === 'reports') {
+    const operational = transactions.filter(t => (t.fund_type || 'operational') === 'operational');
+    const current = totals(operational.filter(t => String(t.date || '').startsWith(monthKey)));
+    const all = totals(operational);
+    const net = all.in - all.out;
+    const monthRows = [];
+    for (let offset = 5; offset >= 0; offset--) {
+      const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - offset);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const sums = totals(operational.filter(t => String(t.date || '').startsWith(key)));
+      monthRows.push({ key, label: d.toLocaleDateString('id-ID', { month: 'short' }), ...sums });
+    }
+    const peak = Math.max(1, ...monthRows.flatMap(m => [m.in, m.out]));
+    const chart = monthRows.map(m => `<div class="stat-chart-month"><div class="stat-bars"><span class="stat-bar-in" style="height:${Math.max(3, m.in / peak * 100)}%" title="Pemasukan ${money(m.in)}"></span><span class="stat-bar-out" style="height:${Math.max(3, m.out / peak * 100)}%" title="Pengeluaran ${money(m.out)}"></span></div><small>${esc(m.label)}</small></div>`).join('');
+    const recentMonths = [...monthRows].reverse().map(m => `<div class="stat-month-row"><b>${esc(m.label)} ${m.key.slice(0,4)}</b><span class="green-text">+ ${money(m.in)}</span><span class="red-text">− ${money(m.out)}</span><strong>${money(m.in-m.out)}</strong></div>`).join('');
+    show('Statistik & Laporan', `<div class="stats-report">
+      <p class="stats-period">Ringkasan kas operasional · ${esc($('#monthLabel').textContent || 'Bulan ini')}</p>
+      <div class="stats-cards">
+        <article class="stats-card"><span>Pemasukan bulan ini</span><b class="green-text">${money(current.in)}</b></article>
+        <article class="stats-card"><span>Pengeluaran bulan ini</span><b class="red-text">${money(current.out)}</b></article>
+        <article class="stats-card"><span>Saldo bersih keseluruhan</span><b>${money(net)}</b></article>
+        <article class="stats-card"><span>Jumlah transaksi kas</span><b>${operational.length}</b></article>
+      </div>
+      <section class="stats-panel"><h3>Grafik 6 bulan terakhir</h3><div class="stats-legend"><span><i class="legend-in"></i>Pemasukan</span><span><i class="legend-out"></i>Pengeluaran</span></div><div class="stats-chart">${chart}</div></section>
+      <section class="stats-panel"><h3>Rincian per bulan</h3><div class="stats-month-list">${recentMonths}</div></section>
+      <section class="stats-total"><span>Total pemasukan</span><b class="green-text">${money(all.in)}</b><span>Total pengeluaran</span><b class="red-text">${money(all.out)}</b><span>Saldo bersih</span><b>${money(net)}</b></section>
+      <button class="submit-button" id="exportCsv">Unduh laporan CSV</button>
+      <p class="stats-note">Statistik ini dihitung dari transaksi kas operasional yang tersimpan. Dana asuransi dan dana lainnya tetap terpisah.</p>
+    </div>`);
+    $('#exportCsv').onclick = exportCsv;
+    return;
+  }
   if (tab === 'comments') { renderComments(); return; }
 }
 async function renderComments() {
