@@ -6,6 +6,41 @@ const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const $ = s => document.querySelector(s);
 const money = n => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+
+function numberToIndonesianWords(value) {
+  const n = Math.floor(Math.abs(Number(value) || 0));
+  const units = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas'];
+  function words(x) {
+    if (x < 12) return units[x];
+    if (x < 20) return words(x - 10) + ' belas';
+    if (x < 100) return words(Math.floor(x / 10)) + ' puluh' + (x % 10 ? ' ' + words(x % 10) : '');
+    if (x < 200) return 'seratus' + (x - 100 ? ' ' + words(x - 100) : '');
+    if (x < 1000) return words(Math.floor(x / 100)) + ' ratus' + (x % 100 ? ' ' + words(x % 100) : '');
+    if (x < 2000) return 'seribu' + (x - 1000 ? ' ' + words(x - 1000) : '');
+    if (x < 1000000) return words(Math.floor(x / 1000)) + ' ribu' + (x % 1000 ? ' ' + words(x % 1000) : '');
+    if (x < 1000000000) return words(Math.floor(x / 1000000)) + ' juta' + (x % 1000000 ? ' ' + words(x % 1000000) : '');
+    if (x < 1000000000000) return words(Math.floor(x / 1000000000)) + ' miliar' + (x % 1000000000 ? ' ' + words(x % 1000000000) : '');
+    return String(x);
+  }
+  return n === 0 ? 'nol' : words(n);
+}
+function speakCurrentBalance() {
+  if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
+    alert('Fitur suara belum didukung browser ini. Coba gunakan Chrome versi terbaru.');
+    return;
+  }
+  const balanceText = $('#balance')?.getAttribute('aria-label') || $('#balance')?.textContent || 'Rp 0';
+  const amount = Number(String(balanceText).replace(/[^\d-]/g, '')) || 0;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(
+    'Saldo kas dermaga saat ini ' + numberToIndonesianWords(amount) + ' rupiah.'
+  );
+  utterance.lang = 'id-ID';
+  utterance.rate = 0.9;
+  utterance.pitch = 1;
+  window.speechSynthesis.speak(utterance);
+}
+
 const today = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
 const monthKey = today().slice(0, 7);
 const fmtDate = s => new Date(s + 'T00:00:00').toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -185,6 +220,11 @@ document.addEventListener('click', e => {
   const collapsed = content.classList.toggle('is-collapsed');
   toggle.textContent = collapsed ? 'Lihat pesan +' : 'Perkecil −';
   toggle.setAttribute('aria-expanded', String(!collapsed));
+});
+
+
+document.addEventListener('click', e => {
+  if (e.target.closest('#speakBalanceBtn')) speakCurrentBalance();
 });
 
 function renderPinnedAdminMessage() {
