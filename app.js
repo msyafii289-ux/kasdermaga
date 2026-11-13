@@ -255,7 +255,7 @@ function showTab(tab) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === tab));
   if (tab === 'home') return;
   if (tab === 'history') { const operational = transactions.filter(t => (t.fund_type || 'operational') === 'operational'); show('Riwayat Transaksi', operational.length ? [...operational].sort((a, b) => b.date.localeCompare(a.date)).map(t => txHtml(t, isAdmin)).join('') : '<p>Belum ada transaksi.</p>'); return; }
-  if (tab === 'reports') { const x = totals(transactions.filter(t => t.date.startsWith(monthKey))), all = totals(transactions); show('Laporan Bulan Ini', `<p>Periode: <b>${esc($('#monthLabel').textContent)}</b></p><p>Total pemasukan: <b class="green-text">${money(x.in)}</b></p><p>Total pengeluaran: <b class="red-text">${money(x.out)}</b></p><p>Saldo bersih bulan ini: <b>${money(x.in - x.out)}</b></p><hr><p>Saldo keseluruhan: <b>${money(all.in - all.out)}</b></p><p>Jumlah transaksi: <b>${transactions.length}</b></p><button class="submit-button" id="openStatistics">📊 Lihat Statistik Dermaga</button><button class="submit-button" id="exportCsv">Unduh laporan CSV</button>`); $('#openStatistics').onclick = renderStatistics; $('#exportCsv').onclick = exportCsv; return; }
+  if (tab === 'reports') { const x = totals(transactions.filter(t => t.date.startsWith(monthKey))), all = totals(transactions); show('Laporan Bulan Ini', `<p>Periode: <b>${esc($('#monthLabel').textContent)}</b></p><p>Total pemasukan: <b class="green-text">${money(x.in)}</b></p><p>Total pengeluaran: <b class="red-text">${money(x.out)}</b></p><p>Saldo bersih bulan ini: <b>${money(x.in - x.out)}</b></p><hr><p>Saldo keseluruhan: <b>${money(all.in - all.out)}</b></p><p>Jumlah transaksi: <b>${transactions.length}</b></p><button class="submit-button" id="exportCsv">Unduh laporan CSV</button>`); $('#exportCsv').onclick = exportCsv; return; }
   if (tab === 'comments') { renderComments(); return; }
 }
 async function renderComments() {
@@ -436,39 +436,8 @@ async function renderMosqueFunds() {
 }
 
 document.addEventListener('keydown',e=>{const photo=e.target.closest&&e.target.closest('[data-gallery-open]');if(photo&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openGalleryPhoto(photo.dataset.gallerySrc,photo.dataset.galleryTitle);}});
-async function renderStatistics() {
-  await loadCommunityData();
-  const operational = transactions.filter(t => (t.fund_type || 'operational') === 'operational');
-  const all = totals(operational);
-  const balance = all.in - all.out;
-  const activeParticipants = participants.filter(p => p.is_active !== false).length;
-  const months = [];
-  const now = new Date();
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-    const rows = operational.filter(t => String(t.date || '').startsWith(key));
-    const sums = totals(rows);
-    months.push({ label: d.toLocaleDateString('id-ID', { month: 'short' }), income: sums.in, expense: sums.out });
-  }
-  const maxValue = Math.max(1, ...months.flatMap(m => [m.income, m.expense]));
-  const chart = months.map(m => `<div class="statistics-month"><div class="statistics-bars"><span class="statistics-bar income-bar" style="height:${Math.max(3, m.income / maxValue * 100)}%" title="Pemasukan ${money(m.income)}"></span><span class="statistics-bar expense-bar" style="height:${Math.max(3, m.expense / maxValue * 100)}%" title="Pengeluaran ${money(m.expense)}"></span></div><small>${esc(m.label)}</small></div>`).join('');
-  const html = `<p class="muted">Statistik berdasarkan data kas yang tersimpan. Dana asuransi tetap terpisah.</p>
-    <div class="statistics-cards">
-      <article class="statistics-card"><span>Saldo kas operasional</span><b>${money(balance)}</b></article>
-      <article class="statistics-card"><span>Total pemasukan</span><b class="green-text">${money(all.in)}</b></article>
-      <article class="statistics-card"><span>Total pengeluaran</span><b class="red-text">${money(all.out)}</b></article>
-      <article class="statistics-card"><span>Jumlah transaksi</span><b>${operational.length.toLocaleString('id-ID')}</b></article>
-      <article class="statistics-card"><span>Peserta aktif</span><b>${activeParticipants.toLocaleString('id-ID')}</b></article>
-    </div>
-    <section class="statistics-chart"><h3>Grafik 6 Bulan Terakhir</h3><div class="statistics-legend"><span><i class="legend-income"></i>Pemasukan</span><span><i class="legend-expense"></i>Pengeluaran</span></div><div class="statistics-chart-bars">${chart}</div></section>
-    <p class="form-note">Angka diperbarui dari data transaksi dan peserta yang berhasil dimuat.</p>`;
-  show('Statistik Dermaga', html);
-}
-
 document.querySelectorAll('[data-community]').forEach(b => b.addEventListener('click', async () => {
   const key = b.dataset.community;
-  if (key === 'statistics') return renderStatistics();
   if (key === 'announcements') return renderAnnouncements();
   if (key === 'insurance') { if (!isAdmin) return; return renderInsurance(); }
   if (key === 'inventory') return renderInventory();

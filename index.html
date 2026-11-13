@@ -2,50 +2,9 @@
 <html lang="id">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#102d4d"><title>KAS DERMAGA</title><link rel="stylesheet" href="style.css?v=20261113-stats2">
+<meta name="theme-color" content="#102d4d"><title>KAS DERMAGA</title><link rel="stylesheet" href="style.css?v=20261113-layout1">
 </head>
-<body>
-<div class="device-preview-tools" id="devicePreviewTools">
-  <span>Pratinjau tampilan</span>
-  <button type="button" id="openPhonePreview" aria-label="Lihat pratinjau HP">▯ Mode HP</button>
-</div>
-<dialog id="phonePreviewDialog" class="phone-preview-dialog">
-  <div class="phone-preview-head">
-    <strong>Pratinjau HP</strong>
-    <div class="phone-preview-sizes">
-      <button type="button" data-preview-width="360">360</button>
-      <button type="button" data-preview-width="390" class="selected">390</button>
-      <button type="button" data-preview-width="430">430</button>
-    </div>
-    <button type="button" id="closePhonePreview" class="phone-preview-close">Tutup ×</button>
-  </div>
-  <div class="phone-preview-stage">
-    <iframe id="phonePreviewFrame" title="Pratinjau website KAS DERMAGA dalam ukuran HP" loading="lazy"></iframe>
-  </div>
-</dialog>
-<script>
-(function(){
-  const tools=document.getElementById('devicePreviewTools');
-  if(new URLSearchParams(location.search).has('mobilePreview')){ if(tools) tools.remove(); return; }
-  const dialog=document.getElementById('phonePreviewDialog');
-  const frame=document.getElementById('phonePreviewFrame');
-  const open=document.getElementById('openPhonePreview');
-  const close=document.getElementById('closePhonePreview');
-  const sizes=dialog ? dialog.querySelectorAll('[data-preview-width]') : [];
-  let currentWidth=390;
-  function setWidth(width){ currentWidth=Number(width); frame.style.width=currentWidth+'px'; sizes.forEach(b=>b.classList.toggle('selected',Number(b.dataset.previewWidth)===currentWidth)); }
-  if(open&&dialog&&frame){
-    open.addEventListener('click',()=>{
-      const url=new URL(location.href); url.searchParams.set('mobilePreview','1');
-      frame.src=url.toString(); setWidth(currentWidth); dialog.showModal();
-    });
-    if(close) close.addEventListener('click',()=>dialog.close());
-    sizes.forEach(b=>b.addEventListener('click',()=>setWidth(b.dataset.previewWidth)));
-    dialog.addEventListener('click',e=>{if(e.target===dialog) dialog.close();});
-  }
-})();
-</script>
-<div class="phone-shell">
+<body><div class="phone-shell">
 <header class="topbar"><div class="brand-mark">KD</div><div class="brand-copy"><strong>KAS DERMAGA</strong><span>Parit Haji Yakub · Desa Bunga Tanjung</span></div><button class="avatar" id="profileBtn">A</button></header>
 <div class="running-text" role="status" aria-label="Informasi website"><span>SELAMAT DATANG DI WEBSITE KAS DERMAGA PARIT HAJI YAKUB – TRANSPARANSI DAN KETERBUKAAN INFORMASI KEUANGAN.</span></div>
 <div class="visitor-counter" aria-live="polite"><span>👥 Pengunjung website</span><strong id="visitorCount">Menghitung...</strong></div>
@@ -78,7 +37,7 @@
   </div>
 </section>
 <section class="quick-actions"><button class="action-button add" data-open="income"><span>＋</span><b>Tambah<br>pemasukan</b></button><button class="action-button minus" data-open="expense"><span>－</span><b>Tambah<br>pengeluaran</b></button><button class="action-button report" data-tab="reports"><span>▤</span><b>Lihat<br>laporan</b></button></section>
-<section class="section-head"><div><h2>Transaksi Terbaru</h2><p>Catatan kas terakhir</p></div><button class="text-button" data-tab="history">Lihat semua</button></section><section class="transaction-list" id="recentList"></section>
+<section class="section-head" hidden><div><h2>Transaksi Terbaru</h2><p>Catatan kas terakhir</p></div><button class="text-button" data-tab="history">Lihat semua</button></section><section class="transaction-list" id="recentList" hidden></section>
 <section class="section-head report-head"><div><h2>Ringkasan Bulanan</h2><p id="monthLabel"></p></div><span class="mini-badge">BULAN INI</span></section><section class="mini-summary"><div><span>Pemasukan</span><b class="green-text" id="reportIn">Rp 0</b></div><div><span>Pengeluaran</span><b class="red-text" id="reportOut">Rp 0</b></div><div><span>Saldo bersih</span><b id="reportNet">Rp 0</b></div></section>
 </main>
 <nav class="bottom-nav"><button class="nav-item active" data-tab="home"><span>⌂</span>Beranda</button><button class="nav-item" data-tab="history"><span>▤</span>Riwayat</button><button class="nav-item center" data-open="income"><span>＋</span>Tambah</button><button class="nav-item" data-tab="reports"><span>▥</span>Laporan</button><button class="nav-item" data-tab="comments"><span>☏</span>Komentar</button></nav>
@@ -88,4 +47,4 @@
 <label>Jenis dana<select name="fund_type"><option value="operational">Kas Operasional</option><option value="insurance">Dana Asuransi (terpisah)</option></select></label><label>Keterangan lengkap<textarea name="note" rows="3" placeholder="Contoh: Pembelian BBM untuk operasional penyeberangan" required></textarea></label><label>Jumlah (Rp)<input type="number" name="amount" min="1" inputmode="numeric" required></label><button class="submit-button" type="submit">Simpan Transaksi</button><p class="form-note">Data transaksi disimpan secara online di database KAS DERMAGA.</p></form></dialog>
 <dialog id="simpleDialog"><div class="simple-dialog"><button class="close" id="closeSimple">×</button><h2 id="simpleTitle">Menu</h2><div id="simpleBody"></div></div></dialog>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="app.js?v=20261113-stats2"></script></body></html>
+<script src="app.js?v=20261113-layout1"></script></body></html>
