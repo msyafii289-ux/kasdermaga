@@ -275,3 +275,104 @@ button:disabled { opacity: .55; cursor: not-allowed; }
     padding:10px;
   }
 }
+
+/* Tampilan komputer: perluasan layout khusus layar besar; aturan HP tetap dipertahankan */
+@media (min-width: 900px){
+  body{padding:0;background:#edf2f7}
+  .phone-shell{max-width:1440px;min-height:100vh;margin:0 auto;padding-bottom:104px;border-radius:0;overflow:visible;box-shadow:0 0 45px rgba(16,45,77,.08)}
+  .topbar{height:88px;padding:0 clamp(28px,4vw,64px);gap:14px;background-position:center 48%}
+  .brand-mark{width:48px;height:48px}
+  .brand-copy strong{font-size:18px}
+  .brand-copy span{font-size:12px}
+  .avatar{width:40px;height:40px}
+  .running-text{font-size:12px;padding:12px 0}
+  .visitor-counter{font-size:12px;padding:10px}
+  main{max-width:1280px;margin:0 auto;padding:32px 36px}
+  .welcome{margin-bottom:22px}
+  .welcome h1{font-size:30px}
+  .eyebrow{font-size:11px}
+  .muted{font-size:13px}
+  .status{font-size:11px;padding:9px 13px}
+  .balance-card{border-radius:22px;padding:24px 28px}
+  .balance-head,.balance-foot{font-size:13px}
+  .balance{font-size:36px;margin:16px 0}
+  .stat-grid{gap:16px;margin:18px 0}
+  .stat-card{padding:20px;border-radius:18px}
+  .stat-icon{width:34px;height:34px}
+  .stat-card span{font-size:13px}
+  .stat-card strong{font-size:21px}
+  .community-tools,.extra-menu-grid{gap:14px}
+  .community-card{padding:17px 18px;border-radius:16px;gap:13px}
+  .community-card>span{font-size:25px}
+  .community-card b{font-size:13px}
+  .community-card small{font-size:11px}
+  .community-card>strong{font-size:22px}
+  .extra-menu{margin:12px 0 24px}
+  .section-head{margin-bottom:14px}
+  .section-head h2{font-size:19px}
+  .section-head p{font-size:12px}
+  .text-button{font-size:12px}
+  .quick-actions{gap:14px;margin:20px 0 30px}
+  .action-button{min-height:78px;padding:14px 18px;border-radius:16px;gap:12px}
+  .action-button span{width:38px;height:38px;font-size:22px}
+  .action-button b{font-size:13px}
+  .transaction{padding:15px 18px;border-radius:15px}
+  .tx-icon{width:42px;height:42px}
+  .tx-info b{font-size:13px}
+  .tx-info small,.tx-amount{font-size:11px}
+  .mini-summary{padding:6px 18px;border-radius:16px}
+  .mini-summary div{font-size:13px;padding:13px 0}
+  .bottom-nav{bottom:0;left:50%;transform:translateX(-50%);width:min(100%,1440px);max-width:1440px;height:82px;padding:10px 12%;border-radius:0;border-top:1px solid var(--line);box-shadow:0 -5px 24px rgba(16,45,77,.07)}
+  .nav-item{font-size:11px;min-width:72px;gap:5px}
+  .nav-item span{font-size:23px}
+  .nav-item.center span{width:42px;height:42px}
+  dialog{max-width:560px}
+  #simpleDialog{width:min(560px,calc(100vw - 48px));max-width:min(560px,calc(100vw - 48px))}
+  #transactionForm,.simple-dialog{padding:26px}
+  .dialog-head h2,.simple-dialog h2{font-size:22px}
+}
+@media (min-width: 1200px){
+  main{padding-left:52px;padding-right:52px}
+  .extra-menu-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .community-tools{gap:18px}
+}
+
+
+/* Alat pratinjau HP di komputer: iframe memakai viewport HP sebenar */
+.device-preview-tools{display:none}
+.phone-preview-dialog{padding:0;border:0;border-radius:18px;width:min(520px,calc(100vw - 28px));max-width:520px;max-height:calc(100vh - 28px);overflow:hidden;background:#eaf0f5;box-shadow:0 22px 80px #071b2c66}
+.phone-preview-dialog::backdrop{background:#071b2caa;backdrop-filter:blur(4px)}
+.phone-preview-head{display:flex;align-items:center;gap:10px;padding:12px 14px;background:white;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.phone-preview-head strong{font:800 13px Manrope;color:var(--navy);margin-right:auto}
+.phone-preview-sizes{display:flex;gap:5px}
+.phone-preview-sizes button,.phone-preview-close{border:1px solid #dce5ed;background:#f5f8fb;color:#38516a;border-radius:8px;padding:7px 10px;font:700 11px 'DM Sans',sans-serif}
+.phone-preview-sizes button.selected{background:var(--navy);border-color:var(--navy);color:white}
+.phone-preview-close{background:#fff}
+.phone-preview-stage{height:min(82vh,820px);overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:12px;background:#dfe7ee}
+#phonePreviewFrame{display:block;flex:none;height:780px;max-height:none;border:8px solid #182b3d;border-radius:28px;background:#f7f9fb;box-shadow:0 8px 25px #102d4d30}
+@media(min-width:900px){
+ .device-preview-tools{display:flex;position:fixed;right:22px;top:14px;z-index:30;align-items:center;gap:10px;padding:8px 10px 8px 14px;background:#fff;border:1px solid #e1e8ef;border-radius:12px;box-shadow:0 5px 20px #102d4d18}
+ .device-preview-tools span{font-size:11px;font-weight:700;color:#53677a}
+ .device-preview-tools button{border:0;border-radius:8px;background:var(--navy);color:#fff;padding:9px 13px;font:800 11px 'DM Sans',sans-serif;cursor:pointer}
+}
+@media(max-width:899px){.device-preview-tools{display:none!important}}
+
+
+/* Statistik dermaga */
+.statistics-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}
+.statistics-card{min-width:0;padding:15px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 4px 14px rgba(16,45,77,.045)}
+.statistics-card span{display:block;color:var(--muted);font-size:11px;margin-bottom:8px}
+.statistics-card b{display:block;color:var(--navy);font-size:clamp(15px,3.5vw,20px);overflow-wrap:anywhere}
+.statistics-chart{margin:18px 0;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.statistics-chart h3{margin:0 0 12px;color:var(--navy);font-size:15px}
+.statistics-legend{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:11px;margin-bottom:12px}
+.statistics-legend span{display:flex;align-items:center;gap:6px}
+.statistics-legend i{display:inline-block;width:9px;height:9px;border-radius:3px}
+.legend-income{background:#249b68}.legend-expense{background:#e07855}
+.statistics-chart-bars{height:150px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;align-items:end;border-bottom:1px solid var(--line);padding:0 2px}
+.statistics-month{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:7px;min-width:0}
+.statistics-bars{height:125px;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:4px}
+.statistics-bar{display:block;width:min(13px,34%);min-height:3px;border-radius:5px 5px 0 0}
+.income-bar{background:#249b68}.expense-bar{background:#e07855}
+.statistics-month small{font-size:10px;color:var(--muted);padding-bottom:5px}
+@media(min-width:700px){.statistics-cards{grid-template-columns:repeat(3,minmax(0,1fr))}.statistics-chart-bars{height:190px}.statistics-bars{height:165px}}
