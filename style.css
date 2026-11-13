@@ -304,3 +304,10 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .stats-note{font-size:11px;color:var(--muted,#687386);line-height:1.5;margin:0}
 @media(min-width:700px){.stats-cards{grid-template-columns:repeat(4,minmax(0,1fr))}.stats-card{padding:16px}.stats-panel{padding:18px}.stats-chart{height:190px}.stat-bars{height:160px}}
 @media(max-width:380px){.stats-card{padding:10px}.stat-month-row{grid-template-columns:.8fr 1.2fr 1.2fr 1fr;font-size:10px;gap:3px}.stats-chart{gap:4px}}
+
+
+/* Jam dan tanggal ditampilkan menyatu pada gambar header */
+.topbar .datetime-strip{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:3px;min-width:92px;padding:7px 9px;border:1px solid #ffffff55;border-radius:11px;background:#071f38a8;color:#fff;line-height:1.25;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.topbar .datetime-date{font-size:9px;color:#e4edf6;white-space:nowrap}
+.topbar .datetime-time{font-size:13px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:.3px;white-space:nowrap}
+@media(max-width:390px){.topbar{gap:7px;padding:0 10px}.brand-mark{width:36px;height:36px;flex:none}.brand-copy{min-width:0}.brand-copy strong{font-size:12px}.brand-copy span{font-size:8px}.topbar .datetime-strip{min-width:78px;padding:6px 6px}.topbar .datetime-date{font-size:8px}.topbar .datetime-time{font-size:11px}.avatar{width:30px;height:30px;flex:none}}
