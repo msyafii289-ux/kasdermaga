@@ -59,4 +59,33 @@
   function updateClock(){const now=new Date();dateEl.textContent=dateFmt.format(now);timeEl.textContent=timeFmt.format(now)+' WIB';}
   updateClock();setInterval(updateClock,1000);
 })();
-</script></body></html>
+</script>
+<script>
+(function(){
+  const header = document.querySelector('.topbar');
+  if (!header) return;
+  const photos = Array.from({length:10}, (_,i) =>
+    'images/banner-' + String(i+1).padStart(2,'0') + '.png'
+  );
+  let previous = -1;
+  try {
+    previous = Number(localStorage.getItem('kasDermagaBannerIndex'));
+    if (!Number.isInteger(previous) || previous < 0 || previous >= photos.length) previous = -1;
+  } catch (_) {}
+  let next = Math.floor(Math.random() * photos.length);
+  if (photos.length > 1 && next === previous) next = (next + 1 + Math.floor(Math.random() * (photos.length - 1))) % photos.length;
+  try { localStorage.setItem('kasDermagaBannerIndex', String(next)); } catch (_) {}
+  const img = new Image();
+  img.onload = function(){
+    header.style.backgroundImage =
+      "linear-gradient(90deg,rgba(7,35,62,.82),rgba(7,35,62,.18)),url('" + photos[next] + "')";
+    header.classList.add('banner-photo-active');
+  };
+  img.onerror = function(){
+    header.style.backgroundImage =
+      "linear-gradient(90deg,rgba(7,35,62,.82),rgba(7,35,62,.18)),url('header-dermaga.jpg')";
+  };
+  img.src = photos[next];
+})();
+</script>
+</body></html>
