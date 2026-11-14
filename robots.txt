@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://msyafii289-ux.github.io/kasdermaga/sitemap.xml
