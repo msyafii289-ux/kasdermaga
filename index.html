@@ -1,8 +1,9 @@
 <!doctype html>
 <html lang="id">
 <head>
+    <meta name="google-site-verification" content="YCiry8GC8SK2eBdVb7PUwFXrX6skMKhcwstOcymjvGk" />
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#102d4d"><title>KAS DERMAGA</title><link rel="stylesheet" href="style.css?v=20261113-speak1">
+<meta name="theme-color" content="#102d4d"><title>KAS DERMAGA</title><link rel="stylesheet" href="style.css?v=20261113-datetime2">
 </head>
 <body><div class="phone-shell">
 <header class="topbar"><div class="brand-mark">KD</div><div class="brand-copy"><strong>KAS DERMAGA</strong><span>Parit Haji Yakub · Desa Bunga Tanjung</span></div><div class="datetime-strip" aria-label="Tanggal dan waktu sekarang"><span class="datetime-date" id="siteDate">Memuat tanggal...</span><strong class="datetime-time" id="siteTime">--:--:-- WIB</strong></div><button class="avatar" id="profileBtn">A</button></header>
@@ -10,7 +11,7 @@
 <div class="visitor-counter" aria-live="polite"><span>👥 Pengunjung website</span><strong id="visitorCount">Menghitung...</strong></div>
 <main>
 <section class="welcome"><div><p class="eyebrow" id="adminLabel">PENGUNJUNG</p><h1>Ringkasan Kas</h1><p class="muted" id="todayLabel"></p></div><span class="status" id="connectionStatus"><i></i> Menghubungkan...</span></section>
-<section class="balance-card"><div class="balance-head"><span>Saldo Kas Saat Ini</span><span>DERMAGA</span></div><div class="balance" id="balance">Rp 0</div><div class="balance-foot"><span>Dihitung dari seluruh transaksi</span><button type="button" class="speak-balance-btn" id="speakBalanceBtn" aria-label="Dengarkan nominal saldo kas" title="Dengarkan saldo"><span aria-hidden="true">🔊</span> Dengarkan saldo</button></div></section><section class="balance-card insurance-balance-card"><div class="balance-head"><span>Saldo Dana Asuransi</span><span>🛡️ DANA KHUSUS</span></div><div class="balance" id="insuranceBalance">Rp 0</div><div class="balance-foot"><span>Terpisah dari kas operasional dermaga</span><span>✓</span></div></section>
+<section class="balance-card"><div class="balance-head"><span>Saldo Kas Saat Ini</span><span>DERMAGA</span></div><div class="balance" id="balance">Rp 0</div><div class="balance-foot"><span>Dihitung dari seluruh transaksi</span><span>↗</span></div></section><section class="balance-card insurance-balance-card"><div class="balance-head"><span>Saldo Dana Asuransi</span><span>🛡️ DANA KHUSUS</span></div><div class="balance" id="insuranceBalance">Rp 0</div><div class="balance-foot"><span>Terpisah dari kas operasional dermaga</span><span>✓</span></div></section>
 <section class="stat-grid"><article class="stat-card income"><div class="stat-icon">↙</div><span>Pemasukan bulan ini</span><strong id="totalIn">Rp 0</strong></article><article class="stat-card expense"><div class="stat-icon">↗</div><span>Pengeluaran bulan ini</span><strong id="totalOut">Rp 0</strong></article></section>
 <section class="community-tools">
   <button class="community-card" data-community="participants"><span>👥</span><div><b>Daftar Peserta</b><small>Lihat dan kelola nama peserta</small></div><strong>›</strong></button>
@@ -47,7 +48,7 @@
 <label>Jenis dana<select name="fund_type"><option value="operational">Kas Operasional</option><option value="insurance">Dana Asuransi (terpisah)</option></select></label><label>Keterangan lengkap<textarea name="note" rows="3" placeholder="Contoh: Pembelian BBM untuk operasional penyeberangan" required></textarea></label><label>Jumlah (Rp)<input type="number" name="amount" min="1" inputmode="numeric" required></label><button class="submit-button" type="submit">Simpan Transaksi</button><p class="form-note">Data transaksi disimpan secara online di database KAS DERMAGA.</p></form></dialog>
 <dialog id="simpleDialog"><div class="simple-dialog"><button class="close" id="closeSimple">×</button><h2 id="simpleTitle">Menu</h2><div id="simpleBody"></div></div></dialog>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="app.js?v=20261113-speak1"></script>
+<script src="app.js?v=20261113-statistik2"></script>
 <script>
 (function(){
   const dateEl=document.getElementById('siteDate');

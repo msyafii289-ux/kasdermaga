@@ -311,24 +311,3 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .topbar .datetime-date{font-size:9px;color:#e4edf6;white-space:nowrap}
 .topbar .datetime-time{font-size:13px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:.3px;white-space:nowrap}
 @media(max-width:390px){.topbar{gap:7px;padding:0 10px}.brand-mark{width:36px;height:36px;flex:none}.brand-copy{min-width:0}.brand-copy strong{font-size:12px}.brand-copy span{font-size:8px}.topbar .datetime-strip{min-width:78px;padding:6px 6px}.topbar .datetime-date{font-size:8px}.topbar .datetime-time{font-size:11px}.avatar{width:30px;height:30px;flex:none}}
-
-
-/* Tombol pembaca saldo kas */
-.speak-balance-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  border: 1px solid rgba(255,255,255,.38);
-  border-radius: 999px;
-  padding: 7px 11px;
-  color: inherit;
-  background: rgba(255,255,255,.12);
-  font: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.speak-balance-btn:active { transform: scale(.97); }
-.speak-balance-btn:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
