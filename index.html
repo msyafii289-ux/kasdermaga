@@ -47,6 +47,15 @@
 <label>Tanggal<input type="date" name="date" required></label><label>Kategori<select name="category"><option>Tarif penyeberangan</option><option>Iuran anggota</option><option>Perbaikan dermaga</option><option>Perawatan fasilitas</option><option>BBM dan operasional</option><option>Asuransi</option><option>Lainnya</option></select></label>
 <label>Jenis dana<select name="fund_type"><option value="operational">Kas Operasional</option><option value="insurance">Dana Asuransi (terpisah)</option></select></label><label>Keterangan lengkap<textarea name="note" rows="3" placeholder="Contoh: Pembelian BBM untuk operasional penyeberangan" required></textarea></label><label>Jumlah (Rp)<input type="number" name="amount" min="1" inputmode="numeric" required></label><button class="submit-button" type="submit">Simpan Transaksi</button><p class="form-note">Data transaksi disimpan secara online di database KAS DERMAGA.</p></form></dialog>
 <dialog id="simpleDialog"><div class="simple-dialog"><button class="close" id="closeSimple">×</button><h2 id="simpleTitle">Menu</h2><div id="simpleBody"></div></div></dialog>
+<script>
+(function(){
+  // Pilih satu dari 10 banner setiap kali halaman dibuka; tetap selama sesi halaman ini.
+  const nomor = Math.floor(Math.random() * 10) + 1;
+  const nama = 'banner-' + String(nomor).padStart(2, '0') + '.png';
+  const header = document.querySelector('.topbar');
+  if (header) header.style.setProperty('--banner-image', 'url("' + nama + '")');
+})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js?v=20261113-statistik2"></script>
 <script>
@@ -65,7 +74,7 @@
   const header = document.querySelector('.topbar');
   if (!header) return;
   const photos = Array.from({length:10}, (_,i) =>
-    'images/banner-' + String(i+1).padStart(2,'0') + '.png'
+    'banner-' + String(i+1).padStart(2,'0') + '.png'
   );
   let previous = -1;
   try {
