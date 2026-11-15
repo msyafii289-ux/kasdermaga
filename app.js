@@ -469,6 +469,7 @@ async function renderMosqueFunds() {
 document.addEventListener('keydown',e=>{const photo=e.target.closest&&e.target.closest('[data-gallery-open]');if(photo&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openGalleryPhoto(photo.dataset.gallerySrc,photo.dataset.galleryTitle);}});
 document.querySelectorAll('[data-community]').forEach(b => b.addEventListener('click', async () => {
   const key = b.dataset.community;
+  if (key === 'registration') return renderRegistrationMenu();
   if (key === 'announcements') return renderAnnouncements();
   if (key === 'insurance') { if (!isAdmin) return; return renderInsurance(); }
   if (key === 'inventory') return renderInventory();
