@@ -488,7 +488,7 @@ async function renderDigitalBusiness() {
   const biaya = rows.filter(x => x.jenis === 'biaya_operasional').reduce((s,x)=>s+Number(x.jumlah||0),0);
   const hpp = rows.filter(x => x.jenis === 'penjualan').reduce((s,x)=>s+Number(x.modal||0),0);
   const laba = omzet - hpp - biaya;
-  const recent = rows.slice(0,20).map(x => `<article class="transaction"><div class="tx-info"><b>${esc(x.layanan || x.jenis)}</b><small>${new Date(x.tanggal).toLocaleDateString('id-ID')} · ${esc(x.keterangan || x.jenis)}</small></div><div class="tx-side"><strong class="tx-amount">${money(x.jumlah)}</strong><button type="button" class="delete-digital-tx" data-id="${esc(x.id)}" style="background:#dc2626;color:#fff;border:0;border-radius:7px;padding:7px 12px;margin-top:7px;cursor:pointer">Hapus</button></div></article>`).join('');
+  const recent = rows.slice(0,20).map(x => `<article class="transaction"><div class="tx-info"><b>${esc(x.layanan || x.jenis)}</b><small>${new Date(x.tanggal).toLocaleDateString('id-ID')} · ${esc(x.keterangan || x.jenis)}</small></div><div class="tx-side"><strong class="tx-amount">${money(x.jumlah)}</strong><button type="button" class="edit-digital-tx" data-id="${esc(x.id)}" style="background:#2563eb;color:#fff;border:0;border-radius:7px;padding:7px 12px;margin-top:7px;cursor:pointer">Edit</button> <button type="button" class="delete-digital-tx" data-id="${esc(x.id)}" style="background:#dc2626;color:#fff;border:0;border-radius:7px;padding:7px 12px;margin-top:7px;cursor:pointer">Hapus</button></div></article>`).join('');
   show('Usaha Saldo Digital', `
     <p class="muted">Ringkasan 100 transaksi terbaru. Nominal modal usaha tidak ditampilkan.</p>
     <div class="digital-stat-grid">
@@ -500,18 +500,48 @@ async function renderDigitalBusiness() {
       <article><span>Bagian Pengelola (50%)</span><b>${money(Math.max(0,laba)*0.5)}</b></article>
     </div>
     <form id="digitalBusinessForm" class="inline-admin-form">
-      <h3>Tambah Transaksi Usaha</h3>
+      <h3 id="digitalBusinessFormTitle">Tambah Transaksi Usaha</h3>
       <label>Jenis transaksi<select name="jenis" required><option value="penjualan">Penjualan saldo / produk</option><option value="pembelian_saldo">Pembelian / isi stok saldo</option><option value="biaya_operasional">Biaya operasional</option></select></label>
       <label>Layanan<select name="layanan" required><option value="DANA">DANA</option><option value="GoPay">GoPay</option><option value="OVO">OVO</option><option value="ShopeePay">ShopeePay</option><option value="Pulsa">Pulsa</option><option value="Token listrik">Token listrik</option><option value="BPJS">BPJS</option><option value="Lainnya">Lainnya</option></select></label>
       <label>Nominal transaksi (Rp)<input name="jumlah" type="number" min="1" step="1" inputmode="numeric" required></label>
       <label id="digitalCostLabel">Harga modal penjualan (Rp)<input name="modal" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
       <label>Keterangan (opsional)<textarea name="keterangan" rows="2" maxlength="500" placeholder="Nama pelanggan atau catatan transaksi"></textarea></label>
       <button class="submit-button" type="submit">Simpan Transaksi</button>
+      <button class="edit-link" type="button" id="digitalBusinessCancelEdit" hidden>Batal Edit</button>
       <p class="form-note" id="digitalBusinessMessage">Transaksi hanya dapat dicatat oleh admin.</p>
     </form>
     <h3>Riwayat Transaksi</h3>
     ${recent || '<div class="empty">Belum ada transaksi usaha.</div>'}
   `);
+  let editingDigitalId = null;
+  document.querySelectorAll('.edit-digital-tx').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!isAdmin) return;
+      const row = rows.find(x => String(x.id) === String(btn.dataset.id));
+      if (!row) return;
+      editingDigitalId = row.id;
+      form.elements.namedItem('jenis').value = row.jenis;
+      form.elements.namedItem('layanan').value = row.layanan || 'Lainnya';
+      form.elements.namedItem('jumlah').value = row.jumlah;
+      form.elements.namedItem('modal').value = row.modal || 0;
+      form.elements.namedItem('keterangan').value = row.keterangan || '';
+      updateCostField();
+      $('#digitalBusinessFormTitle').textContent = 'Edit Transaksi Usaha';
+      form.querySelector('button[type="submit"]').textContent = 'Simpan Perubahan';
+      $('#digitalBusinessCancelEdit').hidden = false;
+      $('#digitalBusinessMessage').textContent = 'Sedang mengedit transaksi. Periksa data sebelum menyimpan.';
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+  $('#digitalBusinessCancelEdit').addEventListener('click', () => {
+    editingDigitalId = null;
+    form.reset();
+    updateCostField();
+    $('#digitalBusinessFormTitle').textContent = 'Tambah Transaksi Usaha';
+    form.querySelector('button[type="submit"]').textContent = 'Simpan Transaksi';
+    $('#digitalBusinessCancelEdit').hidden = true;
+    $('#digitalBusinessMessage').textContent = 'Transaksi hanya dapat dicatat oleh admin.';
+  });
   document.querySelectorAll('.delete-digital-tx').forEach(btn => {
     btn.addEventListener('click', async () => {
       if (!isAdmin || !session?.user?.id) return;
@@ -563,9 +593,11 @@ async function renderDigitalBusiness() {
       keterangan: form.elements.namedItem('keterangan').value.trim() || null,
       pengelola: session.user.id
     };
-    const { error: insertError } = await db.from('usaha_saldo_transaksi').insert(payload);
+    const result = editingDigitalId
+      ? await db.from('usaha_saldo_transaksi').update(payload).eq('id', editingDigitalId)
+      : await db.from('usaha_saldo_transaksi').insert(payload);
     btn.disabled = false;
-    if (insertError) { msg.textContent = 'Gagal menyimpan: ' + insertError.message; return; }
+    if (result.error) { msg.textContent = 'Gagal menyimpan: ' + result.error.message; return; }
     await renderDigitalBusiness();
   };
 }
