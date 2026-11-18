@@ -480,7 +480,7 @@ async function renderDigitalBusiness() {
     .order('tanggal', { ascending: false })
     .limit(100);
   if (error) {
-    show('Usaha Saldo Digital', `<div class="empty">Data belum dapat dimuat: ${esc(error.message)}<br><br>Periksa kebijakan akses (RLS) tabel usaha_saldo_transaksi di Supabase.</div>`);
+    show('Usaha Saldo Digital', `<div class="empty">Data belum dapat dimuat: ${esc(error.message)}<br><br>Pastikan kebijakan RLS tabel usaha_saldo_transaksi mengizinkan akun admin.</div>`);
     return;
   }
   const rows = data || [];
@@ -488,7 +488,7 @@ async function renderDigitalBusiness() {
   const biaya = rows.filter(x => x.jenis === 'biaya_operasional').reduce((s,x)=>s+Number(x.jumlah||0),0);
   const hpp = rows.filter(x => x.jenis === 'penjualan').reduce((s,x)=>s+Number(x.modal||0),0);
   const laba = omzet - hpp - biaya;
-  const recent = rows.slice(0,20).map(x => `<article class="transaction"><div class="tx-info"><b>${esc(x.layanan || x.jenis)}</b><small>${new Date(x.tanggal).toLocaleDateString('id-ID')} · ${esc(x.keterangan || '')}</small></div><div class="tx-side"><strong class="tx-amount">${money(x.jumlah)}</strong></div></article>`).join('');
+  const recent = rows.slice(0,20).map(x => `<article class="transaction"><div class="tx-info"><b>${esc(x.layanan || x.jenis)}</b><small>${new Date(x.tanggal).toLocaleDateString('id-ID')} · ${esc(x.keterangan || x.jenis)}</small></div><div class="tx-side"><strong class="tx-amount">${money(x.jumlah)}</strong></div></article>`).join('');
   show('Usaha Saldo Digital', `
     <p class="muted">Ringkasan 100 transaksi terbaru. Nominal modal usaha tidak ditampilkan.</p>
     <div class="digital-stat-grid">
@@ -499,10 +499,55 @@ async function renderDigitalBusiness() {
       <article><span>Bagian Kas Dermaga (50%)</span><b>${money(Math.max(0,laba)*0.5)}</b></article>
       <article><span>Bagian Pengelola (50%)</span><b>${money(Math.max(0,laba)*0.5)}</b></article>
     </div>
+    <form id="digitalBusinessForm" class="inline-admin-form">
+      <h3>Tambah Transaksi Usaha</h3>
+      <label>Jenis transaksi<select name="jenis" required><option value="penjualan">Penjualan saldo / produk</option><option value="pembelian_saldo">Pembelian / isi stok saldo</option><option value="biaya_operasional">Biaya operasional</option></select></label>
+      <label>Layanan<select name="layanan" required><option value="DANA">DANA</option><option value="GoPay">GoPay</option><option value="OVO">OVO</option><option value="ShopeePay">ShopeePay</option><option value="Pulsa">Pulsa</option><option value="Token listrik">Token listrik</option><option value="BPJS">BPJS</option><option value="Lainnya">Lainnya</option></select></label>
+      <label>Nominal transaksi (Rp)<input name="jumlah" type="number" min="1" step="1" inputmode="numeric" required></label>
+      <label id="digitalCostLabel">Harga modal penjualan (Rp)<input name="modal" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
+      <label>Keterangan (opsional)<textarea name="keterangan" rows="2" maxlength="500" placeholder="Nama pelanggan atau catatan transaksi"></textarea></label>
+      <button class="submit-button" type="submit">Simpan Transaksi</button>
+      <p class="form-note" id="digitalBusinessMessage">Transaksi hanya dapat dicatat oleh admin.</p>
+    </form>
     <h3>Riwayat Transaksi</h3>
     ${recent || '<div class="empty">Belum ada transaksi usaha.</div>'}
-    <p class="form-note">Tampilan awal dashboard. Form input transaksi akan ditambahkan setelah akses database dipastikan.</p>
   `);
+  const form = $('#digitalBusinessForm');
+  const jenis = form?.elements.namedItem('jenis');
+  const modalLabel = $('#digitalCostLabel');
+  const updateCostField = () => {
+    const isSale = jenis.value === 'penjualan';
+    modalLabel.hidden = !isSale;
+    form.elements.namedItem('modal').required = isSale;
+    if (!isSale) form.elements.namedItem('modal').value = '0';
+  };
+  if (jenis) { jenis.addEventListener('change', updateCostField); updateCostField(); }
+  if (form) form.onsubmit = async e => {
+    e.preventDefault();
+    if (!isAdmin || !session?.user?.id) return;
+    const btn = form.querySelector('button[type="submit"]');
+    const msg = $('#digitalBusinessMessage');
+    const kind = jenis.value;
+    const amount = Number(form.elements.namedItem('jumlah').value);
+    const cost = kind === 'penjualan' ? Number(form.elements.namedItem('modal').value) : 0;
+    if (!Number.isFinite(amount) || amount <= 0 || !Number.isFinite(cost) || cost < 0 || (kind === 'penjualan' && cost > amount)) {
+      msg.textContent = 'Periksa nominal transaksi dan harga modal. Harga modal penjualan tidak boleh melebihi harga jual.';
+      return;
+    }
+    btn.disabled = true; msg.textContent = 'Menyimpan transaksi...';
+    const payload = {
+      jenis: kind,
+      layanan: form.elements.namedItem('layanan').value,
+      jumlah: amount,
+      modal: cost,
+      keterangan: form.elements.namedItem('keterangan').value.trim() || null,
+      pengelola: session.user.id
+    };
+    const { error: insertError } = await db.from('usaha_saldo_transaksi').insert(payload);
+    btn.disabled = false;
+    if (insertError) { msg.textContent = 'Gagal menyimpan: ' + insertError.message; return; }
+    await renderDigitalBusiness();
+  };
 }
 
 document.querySelectorAll('[data-community]').forEach(b => b.addEventListener('click', async () => {
