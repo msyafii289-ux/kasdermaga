@@ -469,137 +469,83 @@ async function renderMosqueFunds() {
 document.addEventListener('keydown',e=>{const photo=e.target.closest&&e.target.closest('[data-gallery-open]');if(photo&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openGalleryPhoto(photo.dataset.gallerySrc,photo.dataset.galleryTitle);}});
 
 async function renderDigitalBusiness() {
-  if (!isAdmin) {
-    show('Usaha Saldo Digital', '<p class="muted">Halaman ini hanya dapat dibuka oleh admin.</p>');
+  const moneySafe = n => money(Number(n || 0));
+  const { data: publicData, error: publicError } = await db.rpc('usaha_saldo_public_dashboard');
+  if (publicError) {
+    show('Usaha Saldo Digital', `<div class="empty">Dashboard belum dapat dimuat: ${esc(publicError.message)}. Jalankan file SQL pembaruan usaha_saldo_public_privacy.sql terlebih dahulu.</div>`);
     return;
   }
+  const visibility = publicData?.is_public === true;
+  if (!isAdmin && !visibility) {
+    show('Usaha Saldo Digital', '<div class="empty">Usaha Saldo Digital sedang dalam mode PRIVASI. Silakan hubungi admin.</div>');
+    return;
+  }
+  if (!isAdmin) {
+    const stats = publicData?.statistics || {};
+    show('Usaha Saldo Digital', `
+      <p class="muted">Laporan statistik publik. Detail transaksi dan harga modal tidak ditampilkan.</p>
+      <div class="digital-stat-grid">
+        <article><span>Omzet</span><b>${moneySafe(stats.all_time?.omzet)}</b></article>
+        <article><span>Jumlah transaksi</span><b>${Number(stats.all_time?.jumlah_transaksi || 0).toLocaleString('id-ID')}</b></article>
+        <article><span>Laba bersih</span><b>${moneySafe(stats.all_time?.laba_bersih)}</b></article>
+        <article><span>Bagian Kas Dermaga (50%)</span><b>${moneySafe(stats.all_time?.bagian_kas)}</b></article>
+      </div>
+      <h3>Statistik berdasarkan periode</h3>
+      <div class="digital-stat-grid">
+        <article><span>Hari ini · Omzet</span><b>${moneySafe(stats.harian?.omzet)}</b><small>Laba ${moneySafe(stats.harian?.laba_bersih)}</small></article>
+        <article><span>Minggu ini · Omzet</span><b>${moneySafe(stats.mingguan?.omzet)}</b><small>Laba ${moneySafe(stats.mingguan?.laba_bersih)}</small></article>
+        <article><span>Bulan ini · Omzet</span><b>${moneySafe(stats.bulanan?.omzet)}</b><small>Laba ${moneySafe(stats.bulanan?.laba_bersih)}</small></article>
+        <article><span>Tahun ini · Omzet</span><b>${moneySafe(stats.tahunan?.omzet)}</b><small>Laba ${moneySafe(stats.tahunan?.laba_bersih)}</small></article>
+      </div>`);
+    return;
+  }
+
   show('Usaha Saldo Digital', '<div class="empty">Memuat data usaha...</div>');
-  const { data, error } = await db
-    .from('usaha_saldo_transaksi')
+  const { data, error } = await db.from('usaha_saldo_transaksi')
     .select('id,tanggal,jenis,layanan,keterangan,jumlah,modal')
-    .order('tanggal', { ascending: false })
-    .limit(100);
+    .order('tanggal', { ascending: false }).limit(1000);
   if (error) {
-    show('Usaha Saldo Digital', `<div class="empty">Data belum dapat dimuat: ${esc(error.message)}<br><br>Pastikan kebijakan RLS tabel usaha_saldo_transaksi mengizinkan akun admin.</div>`);
+    show('Usaha Saldo Digital', `<div class="empty">Data belum dapat dimuat: ${esc(error.message)}</div>`);
     return;
   }
   const rows = data || [];
-  const omzet = rows.filter(x => x.jenis === 'penjualan').reduce((s,x)=>s+Number(x.jumlah||0),0);
-  const biaya = rows.filter(x => x.jenis === 'biaya_operasional').reduce((s,x)=>s+Number(x.jumlah||0),0);
-  const hpp = rows.filter(x => x.jenis === 'penjualan').reduce((s,x)=>s+Number(x.modal||0),0);
-  const laba = omzet - hpp - biaya;
-  const recent = rows.slice(0,20).map(x => `<article class="transaction"><div class="tx-info"><b>${esc(x.layanan || x.jenis)}</b><small>${new Date(x.tanggal).toLocaleDateString('id-ID')} · ${esc(x.keterangan || x.jenis)}</small></div><div class="tx-side"><strong class="tx-amount">${money(x.jumlah)}</strong><button type="button" class="edit-digital-tx" data-id="${esc(x.id)}" style="background:#2563eb;color:#fff;border:0;border-radius:7px;padding:7px 12px;margin-top:7px;cursor:pointer">Edit</button> <button type="button" class="delete-digital-tx" data-id="${esc(x.id)}" style="background:#dc2626;color:#fff;border:0;border-radius:7px;padding:7px 12px;margin-top:7px;cursor:pointer">Hapus</button></div></article>`).join('');
+  const stats = publicData?.statistics || {};
+  const omzet = rows.filter(x=>x.jenis==='penjualan').reduce((s,x)=>s+Number(x.jumlah||0),0);
+  const biaya = rows.filter(x=>x.jenis==='biaya_operasional').reduce((s,x)=>s+Number(x.jumlah||0),0);
+  const hpp = rows.filter(x=>x.jenis==='penjualan').reduce((s,x)=>s+Number(x.modal||0),0);
+  const laba = omzet-hpp-biaya;
+  const recent = rows.slice(0,50).map(x=>`<article class="transaction"><div class="tx-info"><b>${esc(x.layanan||x.jenis)}</b><small>${new Date(x.tanggal).toLocaleDateString('id-ID')} · ${esc(x.keterangan||x.jenis)}</small></div><div class="tx-side"><strong class="tx-amount">${money(x.jumlah)}</strong><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button type="button" class="edit-digital-tx" data-id="${esc(x.id)}" style="background:#2563eb;color:#fff;border:0;border-radius:7px;padding:7px 12px;cursor:pointer">Edit</button><button type="button" class="delete-digital-tx" data-id="${esc(x.id)}" style="background:#dc2626;color:#fff;border:0;border-radius:7px;padding:7px 12px;cursor:pointer">Hapus</button></div></div></article>`).join('');
   show('Usaha Saldo Digital', `
-    <p class="muted">Ringkasan 100 transaksi terbaru. Nominal modal usaha tidak ditampilkan.</p>
-    <div class="digital-stat-grid">
-      <article><span>Omzet</span><b>${money(omzet)}</b></article>
-      <article><span>Pengeluaran operasional</span><b>${money(biaya)}</b></article>
-      <article><span>Harga pokok penjualan</span><b>${money(hpp)}</b></article>
-      <article><span>Laba bersih</span><b>${money(laba)}</b></article>
-      <article><span>Bagian Kas Dermaga (50%)</span><b>${money(Math.max(0,laba)*0.5)}</b></article>
-      <article><span>Bagian Pengelola (50%)</span><b>${money(Math.max(0,laba)*0.5)}</b></article>
+    <section class="inline-admin-form"><h3>Visibilitas Dashboard</h3><p class="muted">PUBLIK: masyarakat melihat statistik agregat saja. PRIVASI: hanya admin dapat membuka dashboard.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><button type="button" id="digitalPublicOn" class="submit-button" ${visibility?'disabled':''}>🌐 Aktifkan PUBLIK</button><button type="button" id="digitalPublicOff" class="edit-link" ${!visibility?'disabled':''}>🔒 Aktifkan PRIVASI</button></div><p class="form-note">Status saat ini: <b>${visibility?'PUBLIK':'PRIVASI'}</b></p></section>
+    <h3>Statistik Usaha</h3><div class="digital-stat-grid">
+      <article><span>Omzet (1000 transaksi terbaru)</span><b>${money(omzet)}</b></article><article><span>Pengeluaran operasional</span><b>${money(biaya)}</b></article><article><span>Harga pokok penjualan</span><b>${money(hpp)}</b></article><article><span>Laba bersih</span><b>${money(laba)}</b></article><article><span>Bagian Kas Dermaga (50%)</span><b>${money(Math.max(0,laba)*.5)}</b></article><article><span>Bagian Pengelola (50%)</span><b>${money(Math.max(0,laba)*.5)}</b></article>
+    </div><h3>Statistik Periode</h3><div class="digital-stat-grid">
+      <article><span>Harian · omzet</span><b>${moneySafe(stats.harian?.omzet)}</b><small>Laba ${moneySafe(stats.harian?.laba_bersih)}</small></article><article><span>Mingguan · omzet</span><b>${moneySafe(stats.mingguan?.omzet)}</b><small>Laba ${moneySafe(stats.mingguan?.laba_bersih)}</small></article><article><span>Bulanan · omzet</span><b>${moneySafe(stats.bulanan?.omzet)}</b><small>Laba ${moneySafe(stats.bulanan?.laba_bersih)}</small></article><article><span>Tahunan · omzet</span><b>${moneySafe(stats.tahunan?.omzet)}</b><small>Laba ${moneySafe(stats.tahunan?.laba_bersih)}</small></article>
     </div>
-    <form id="digitalBusinessForm" class="inline-admin-form">
-      <h3 id="digitalBusinessFormTitle">Tambah Transaksi Usaha</h3>
+    <form id="digitalBusinessForm" class="inline-admin-form"><h3 id="digitalBusinessFormTitle">Tambah Transaksi Usaha</h3>
       <label>Jenis transaksi<select name="jenis" required><option value="penjualan">Penjualan saldo / produk</option><option value="pembelian_saldo">Pembelian / isi stok saldo</option><option value="biaya_operasional">Biaya operasional</option></select></label>
       <label>Layanan<select name="layanan" required><option value="DANA">DANA</option><option value="GoPay">GoPay</option><option value="OVO">OVO</option><option value="ShopeePay">ShopeePay</option><option value="Pulsa">Pulsa</option><option value="Token listrik">Token listrik</option><option value="BPJS">BPJS</option><option value="Lainnya">Lainnya</option></select></label>
-      <label>Nominal transaksi (Rp)<input name="jumlah" type="number" min="1" step="1" inputmode="numeric" required></label>
-      <label id="digitalCostLabel">Harga modal penjualan (Rp)<input name="modal" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
-      <label>Keterangan (opsional)<textarea name="keterangan" rows="2" maxlength="500" placeholder="Nama pelanggan atau catatan transaksi"></textarea></label>
-      <button class="submit-button" type="submit">Simpan Transaksi</button>
-      <button class="edit-link" type="button" id="digitalBusinessCancelEdit" hidden>Batal Edit</button>
-      <p class="form-note" id="digitalBusinessMessage">Transaksi hanya dapat dicatat oleh admin.</p>
-    </form>
-    <h3>Riwayat Transaksi</h3>
-    ${recent || '<div class="empty">Belum ada transaksi usaha.</div>'}
-  `);
-  let editingDigitalId = null;
-  document.querySelectorAll('.edit-digital-tx').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (!isAdmin) return;
-      const row = rows.find(x => String(x.id) === String(btn.dataset.id));
-      if (!row) return;
-      editingDigitalId = row.id;
-      form.elements.namedItem('jenis').value = row.jenis;
-      form.elements.namedItem('layanan').value = row.layanan || 'Lainnya';
-      form.elements.namedItem('jumlah').value = row.jumlah;
-      form.elements.namedItem('modal').value = row.modal || 0;
-      form.elements.namedItem('keterangan').value = row.keterangan || '';
-      updateCostField();
-      $('#digitalBusinessFormTitle').textContent = 'Edit Transaksi Usaha';
-      form.querySelector('button[type="submit"]').textContent = 'Simpan Perubahan';
-      $('#digitalBusinessCancelEdit').hidden = false;
-      $('#digitalBusinessMessage').textContent = 'Sedang mengedit transaksi. Periksa data sebelum menyimpan.';
-      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  });
-  $('#digitalBusinessCancelEdit').addEventListener('click', () => {
-    editingDigitalId = null;
-    form.reset();
-    updateCostField();
-    $('#digitalBusinessFormTitle').textContent = 'Tambah Transaksi Usaha';
-    form.querySelector('button[type="submit"]').textContent = 'Simpan Transaksi';
-    $('#digitalBusinessCancelEdit').hidden = true;
-    $('#digitalBusinessMessage').textContent = 'Transaksi hanya dapat dicatat oleh admin.';
-  });
-  document.querySelectorAll('.delete-digital-tx').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      if (!isAdmin || !session?.user?.id) return;
-      const id = btn.dataset.id;
-      if (!confirm('Yakin ingin menghapus transaksi ini? Tindakan ini tidak dapat dibatalkan.')) return;
-      btn.disabled = true;
-      btn.textContent = 'Menghapus...';
-      const { error: deleteError } = await db
-        .from('usaha_saldo_transaksi')
-        .delete()
-        .eq('id', id);
-      if (deleteError) {
-        alert('Gagal menghapus transaksi: ' + deleteError.message);
-        btn.disabled = false;
-        btn.textContent = 'Hapus';
-        return;
-      }
-      await renderDigitalBusiness();
-    });
-  });
-  const form = $('#digitalBusinessForm');
-  const jenis = form?.elements.namedItem('jenis');
-  const modalLabel = $('#digitalCostLabel');
-  const updateCostField = () => {
-    const isSale = jenis.value === 'penjualan';
-    modalLabel.hidden = !isSale;
-    form.elements.namedItem('modal').required = isSale;
-    if (!isSale) form.elements.namedItem('modal').value = '0';
-  };
-  if (jenis) { jenis.addEventListener('change', updateCostField); updateCostField(); }
-  if (form) form.onsubmit = async e => {
-    e.preventDefault();
-    if (!isAdmin || !session?.user?.id) return;
-    const btn = form.querySelector('button[type="submit"]');
-    const msg = $('#digitalBusinessMessage');
-    const kind = jenis.value;
-    const amount = Number(form.elements.namedItem('jumlah').value);
-    const cost = kind === 'penjualan' ? Number(form.elements.namedItem('modal').value) : 0;
-    if (!Number.isFinite(amount) || amount <= 0 || !Number.isFinite(cost) || cost < 0 || (kind === 'penjualan' && cost > amount)) {
-      msg.textContent = 'Periksa nominal transaksi dan harga modal. Harga modal penjualan tidak boleh melebihi harga jual.';
-      return;
-    }
-    btn.disabled = true; msg.textContent = 'Menyimpan transaksi...';
-    const payload = {
-      jenis: kind,
-      layanan: form.elements.namedItem('layanan').value,
-      jumlah: amount,
-      modal: cost,
-      keterangan: form.elements.namedItem('keterangan').value.trim() || null,
-      pengelola: session.user.id
-    };
-    const result = editingDigitalId
-      ? await db.from('usaha_saldo_transaksi').update(payload).eq('id', editingDigitalId)
-      : await db.from('usaha_saldo_transaksi').insert(payload);
-    btn.disabled = false;
-    if (result.error) { msg.textContent = 'Gagal menyimpan: ' + result.error.message; return; }
+      <label>Nominal transaksi / harga jual (Rp)<input name="jumlah" type="number" min="1" step="1" inputmode="numeric" required></label>
+      <label id="digitalCostLabel">Harga modal (Rp)<input name="modal" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
+      <label>Keterangan (opsional)<textarea name="keterangan" rows="2" maxlength="500"></textarea></label><button class="submit-button" type="submit">Simpan Transaksi</button><button class="edit-link" type="button" id="digitalBusinessCancelEdit" hidden>Batal Edit</button><p class="form-note" id="digitalBusinessMessage">Transaksi hanya dapat dikelola admin.</p>
+    </form><h3>Riwayat Transaksi (admin)</h3>${recent||'<div class="empty">Belum ada transaksi usaha.</div>'}`);
+
+  const toggleVisibility = async value => {
+    const { error: saveError } = await db.from('usaha_saldo_settings').upsert({id:1,is_public:value,updated_at:new Date().toISOString(),updated_by:session.user.id},{onConflict:'id'});
+    if(saveError){alert('Gagal mengubah visibilitas: '+saveError.message);return;}
     await renderDigitalBusiness();
   };
+  $('#digitalPublicOn').onclick=()=>toggleVisibility(true);
+  $('#digitalPublicOff').onclick=()=>toggleVisibility(false);
+  const form=$('#digitalBusinessForm'); let editingDigitalId=null;
+  const jenis=form.elements.namedItem('jenis'); const modalLabel=$('#digitalCostLabel');
+  const updateCostField=()=>{const sale=jenis.value==='penjualan';modalLabel.hidden=!sale;form.elements.namedItem('modal').required=sale;if(!sale)form.elements.namedItem('modal').value='0';};
+  jenis.addEventListener('change',updateCostField);updateCostField();
+  document.querySelectorAll('.edit-digital-tx').forEach(btn=>btn.onclick=()=>{const row=rows.find(x=>String(x.id)===String(btn.dataset.id));if(!row)return;editingDigitalId=row.id;form.elements.namedItem('jenis').value=row.jenis;form.elements.namedItem('layanan').value=row.layanan||'Lainnya';form.elements.namedItem('jumlah').value=row.jumlah;form.elements.namedItem('modal').value=row.modal||0;form.elements.namedItem('keterangan').value=row.keterangan||'';updateCostField();$('#digitalBusinessFormTitle').textContent='Edit Transaksi Usaha';form.querySelector('[type=submit]').textContent='Simpan Perubahan';$('#digitalBusinessCancelEdit').hidden=false;form.scrollIntoView({behavior:'smooth'});});
+  $('#digitalBusinessCancelEdit').onclick=()=>{editingDigitalId=null;form.reset();updateCostField();$('#digitalBusinessFormTitle').textContent='Tambah Transaksi Usaha';form.querySelector('[type=submit]').textContent='Simpan Transaksi';$('#digitalBusinessCancelEdit').hidden=true;};
+  document.querySelectorAll('.delete-digital-tx').forEach(btn=>btn.onclick=async()=>{if(!confirm('Yakin ingin menghapus transaksi ini?'))return;btn.disabled=true;const {error:delError}=await db.from('usaha_saldo_transaksi').delete().eq('id',btn.dataset.id);if(delError){alert('Gagal menghapus: '+delError.message);btn.disabled=false;return;}await renderDigitalBusiness();});
+  form.onsubmit=async e=>{e.preventDefault();const btn=form.querySelector('[type=submit]'),msg=$('#digitalBusinessMessage');const kind=jenis.value,amount=Number(form.elements.namedItem('jumlah').value),cost=kind==='penjualan'?Number(form.elements.namedItem('modal').value):0;if(!Number.isFinite(amount)||amount<=0||!Number.isFinite(cost)||cost<0||cost>amount){msg.textContent='Periksa nominal dan harga modal.';return;}btn.disabled=true;const payload={jenis:kind,layanan:form.elements.namedItem('layanan').value,jumlah:amount,modal:cost,keterangan:form.elements.namedItem('keterangan').value.trim()||null,pengelola:session.user.id};const result=editingDigitalId?await db.from('usaha_saldo_transaksi').update(payload).eq('id',editingDigitalId):await db.from('usaha_saldo_transaksi').insert(payload);btn.disabled=false;if(result.error){msg.textContent='Gagal menyimpan: '+result.error.message;return;}await renderDigitalBusiness();};
 }
 
 document.querySelectorAll('[data-community]').forEach(b => b.addEventListener('click', async () => {
