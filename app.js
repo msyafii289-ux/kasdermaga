@@ -467,6 +467,44 @@ async function renderMosqueFunds() {
 }
 
 document.addEventListener('keydown',e=>{const photo=e.target.closest&&e.target.closest('[data-gallery-open]');if(photo&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openGalleryPhoto(photo.dataset.gallerySrc,photo.dataset.galleryTitle);}});
+
+async function renderDigitalBusiness() {
+  if (!isAdmin) {
+    show('Usaha Saldo Digital', '<p class="muted">Halaman ini hanya dapat dibuka oleh admin.</p>');
+    return;
+  }
+  show('Usaha Saldo Digital', '<div class="empty">Memuat data usaha...</div>');
+  const { data, error } = await db
+    .from('usaha_saldo_transaksi')
+    .select('id,tanggal,jenis,layanan,keterangan,jumlah,modal')
+    .order('tanggal', { ascending: false })
+    .limit(100);
+  if (error) {
+    show('Usaha Saldo Digital', `<div class="empty">Data belum dapat dimuat: ${esc(error.message)}<br><br>Periksa kebijakan akses (RLS) tabel usaha_saldo_transaksi di Supabase.</div>`);
+    return;
+  }
+  const rows = data || [];
+  const omzet = rows.filter(x => x.jenis === 'penjualan').reduce((s,x)=>s+Number(x.jumlah||0),0);
+  const biaya = rows.filter(x => x.jenis === 'biaya_operasional').reduce((s,x)=>s+Number(x.jumlah||0),0);
+  const hpp = rows.filter(x => x.jenis === 'penjualan').reduce((s,x)=>s+Number(x.modal||0),0);
+  const laba = omzet - hpp - biaya;
+  const recent = rows.slice(0,20).map(x => `<article class="transaction"><div class="tx-info"><b>${esc(x.layanan || x.jenis)}</b><small>${new Date(x.tanggal).toLocaleDateString('id-ID')} · ${esc(x.keterangan || '')}</small></div><div class="tx-side"><strong class="tx-amount">${money(x.jumlah)}</strong></div></article>`).join('');
+  show('Usaha Saldo Digital', `
+    <p class="muted">Ringkasan 100 transaksi terbaru. Nominal modal usaha tidak ditampilkan.</p>
+    <div class="digital-stat-grid">
+      <article><span>Omzet</span><b>${money(omzet)}</b></article>
+      <article><span>Pengeluaran operasional</span><b>${money(biaya)}</b></article>
+      <article><span>Harga pokok penjualan</span><b>${money(hpp)}</b></article>
+      <article><span>Laba bersih</span><b>${money(laba)}</b></article>
+      <article><span>Bagian Kas Dermaga (50%)</span><b>${money(Math.max(0,laba)*0.5)}</b></article>
+      <article><span>Bagian Pengelola (50%)</span><b>${money(Math.max(0,laba)*0.5)}</b></article>
+    </div>
+    <h3>Riwayat Transaksi</h3>
+    ${recent || '<div class="empty">Belum ada transaksi usaha.</div>'}
+    <p class="form-note">Tampilan awal dashboard. Form input transaksi akan ditambahkan setelah akses database dipastikan.</p>
+  `);
+}
+
 document.querySelectorAll('[data-community]').forEach(b => b.addEventListener('click', async () => {
   const key = b.dataset.community;
   if (key === 'registration') return renderRegistrationMenu();
@@ -478,6 +516,7 @@ document.querySelectorAll('[data-community]').forEach(b => b.addEventListener('c
   if (key === 'purchases') return renderPurchases();
   if (key === 'mosque') return renderMosqueFunds();
   if (key === 'forum') return renderForum();
+  if (key === 'digitalBusiness') return renderDigitalBusiness();
   if (key === 'policy') return renderPolicy();
   if (key === 'participants' || key === 'schedule') {
     await loadCommunityData();
