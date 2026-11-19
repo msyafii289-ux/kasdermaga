@@ -351,3 +351,84 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .digital-stat-grid span{display:block;color:var(--muted);font-size:9px;line-height:1.4}
 .digital-stat-grid b{display:block;color:var(--navy);font:800 13px Manrope;margin-top:7px;overflow-wrap:anywhere}
 #simpleBody h3{font:800 13px Manrope;color:var(--navy);margin:18px 0 8px}
+
+/* =========================================================
+   DESKTOP LAYOUT - KAS DERMAGA
+   Hanya aktif pada layar desktop; tampilan HP dipertahankan.
+   ========================================================= */
+@media (min-width: 900px) {
+  html { background:#eef2f6; }
+  body { padding:0; background:#eef2f6; min-height:100vh; }
+  .phone-shell { width:100%; max-width:1600px; min-height:100vh; margin:0 auto; padding:0 0 48px; border-radius:0; overflow:visible; background:#f5f7fa; box-shadow:0 0 36px rgba(16,45,77,.08); }
+  .topbar { height:88px; padding:0 clamp(28px,5vw,76px); gap:16px; position:relative; top:auto; box-shadow:0 3px 16px rgba(7,35,62,.16); }
+  .brand-mark {width:48px;height:48px;border-radius:14px;font-size:17px}
+  .brand-copy strong {font-size:19px;letter-spacing:.3px}
+  .brand-copy span {font-size:12px}
+  .topbar .datetime-strip {margin-left:auto;min-width:150px;padding:9px 13px}
+  .topbar .datetime-date {font-size:11px}
+  .topbar .datetime-time {font-size:16px}
+  .avatar {width:42px;height:42px}
+  .running-text {padding:11px 0;font-size:12px}
+  .visitor-counter {justify-content:flex-end;padding:10px clamp(28px,5vw,76px);font-size:12px}
+  main { width:min(1320px, calc(100% - 72px)); margin:0 auto; padding:30px 0 56px; display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:20px; align-items:start; }
+  main > .welcome {grid-column:1 / -1;margin:0 0 2px;padding:0 2px}
+  .welcome h1 {font-size:30px}
+  .welcome .eyebrow {font-size:11px}
+  .welcome .muted {font-size:13px}
+  main > .balance-card:not(.insurance-balance-card), main > .insurance-balance-card {grid-column:span 6;min-height:170px;padding:25px 28px;border-radius:20px;display:flex;flex-direction:column;justify-content:center}
+  .balance {font-size:36px;margin:15px 0}
+  .balance-head,.balance-foot {font-size:13px}
+  main > .stat-grid {grid-column:1 / -1;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:0}
+  .stat-card {padding:20px;border-radius:17px;min-height:120px}
+  .stat-card span {font-size:12px}
+  .stat-card strong {font-size:22px}
+  .stat-icon {width:34px;height:34px;font-size:17px}
+  main > .community-tools {grid-column:span 5;grid-template-columns:1fr;gap:11px;margin:0}
+  .community-card {padding:16px 18px;border-radius:15px;gap:14px;min-height:76px;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+  .community-card:hover {transform:translateY(-2px);box-shadow:0 8px 22px rgba(16,45,77,.09);border-color:#cbd8e5}
+  .community-card>span {font-size:25px}
+  .community-card b {font-size:13px}
+  .community-card small {font-size:11px}
+  .community-card>strong {font-size:23px}
+  main > .pinned-admin-section {grid-column:span 7;min-width:0}
+  main > .extra-menu {grid-column:1 / -1;margin:0}
+  .extra-menu .section-head h2 {font-size:21px}
+  .extra-menu .section-head p {font-size:12px}
+  .extra-menu-grid,.extra-menu-grid.expanded {display:grid !important;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px}
+  .extra-menu-grid .community-card {min-height:92px;padding:18px 20px}
+  main > .quick-actions {grid-column:1 / -1;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0}
+  .action-button {min-height:82px;padding:16px 20px;border-radius:16px;gap:13px}
+  .action-button span {width:40px;height:40px;font-size:23px}
+  .action-button b {font-size:13px}
+  main > .section-head, main > .transaction-list, main > .mini-summary {grid-column:1 / -1}
+  .section-head h2 {font-size:20px}
+  .section-head p {font-size:12px}
+  .mini-summary {padding:8px 22px;border-radius:16px}
+  .mini-summary div {font-size:13px;padding:15px 0}
+  .bottom-nav {position:sticky;left:auto;bottom:auto;transform:none;width:100%;max-width:none;height:58px;padding:0 clamp(28px,5vw,76px);border-radius:0;border-top:0;border-bottom:1px solid #e5ebf2;box-shadow:0 5px 16px rgba(16,45,77,.06);justify-content:center;gap:clamp(24px,5vw,76px);background:#fff}
+  .nav-item {font-size:12px;min-width:76px;gap:2px}
+  .nav-item span {font-size:21px}
+  .nav-item.center span {width:34px;height:34px}
+  dialog {max-width:560px}
+  #transactionForm,.simple-dialog {padding:28px}
+  .dialog-head h2,.simple-dialog h2 {font-size:22px}
+  label {font-size:12px}
+  input,select,textarea {font-size:14px}
+  .submit-button {font-size:14px}
+  #simpleBody {font-size:14px;line-height:1.6}
+  #simpleBody h3 {font-size:17px}
+  #simpleBody .community-list {max-height:62vh}
+}
+@media (min-width: 1250px) {
+  main {width:min(1400px, calc(100% - 100px));gap:22px}
+  .extra-menu-grid,.extra-menu-grid.expanded {grid-template-columns:repeat(4,minmax(0,1fr))}
+  main > .community-tools {grid-column:span 4}
+  main > .pinned-admin-section {grid-column:span 8}
+}
+@media (min-width: 900px) and (max-width: 1099px) {
+  main {width:calc(100% - 48px);gap:15px}
+  .extra-menu-grid,.extra-menu-grid.expanded {grid-template-columns:repeat(2,minmax(0,1fr))}
+  main > .community-tools {grid-column:span 5}
+  main > .pinned-admin-section {grid-column:span 7}
+}
+/* Di bawah 900px seluruh desain HP lama tetap berlaku. */
