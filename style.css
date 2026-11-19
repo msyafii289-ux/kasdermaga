@@ -432,3 +432,89 @@ button:disabled { opacity: .55; cursor: not-allowed; }
   main > .pinned-admin-section {grid-column:span 7}
 }
 /* Di bawah 900px seluruh desain HP lama tetap berlaku. */
+
+
+/* =========================================================
+   KAS DERMAGA - FULL SCREEN DESKTOP PATCH
+   Hanya berlaku untuk layar >= 900px.
+   Tampilan HP (<=899px) tidak disentuh.
+   ========================================================= */
+@media screen and (min-width: 900px) {
+  html, body {
+    width: 100%;
+    min-width: 0;
+    min-height: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #eef2f6;
+  }
+
+  .phone-shell {
+    display: block;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 100vh;
+    margin: 0 !important;
+    padding: 0 0 36px !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+  }
+
+  .topbar {
+    width: 100%;
+    padding-left: clamp(24px, 3vw, 64px) !important;
+    padding-right: clamp(24px, 3vw, 64px) !important;
+  }
+
+  main {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 30px clamp(24px, 3vw, 64px) 60px !important;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  main > .welcome,
+  main > .stat-grid,
+  main > .extra-menu,
+  main > .quick-actions,
+  main > .section-head,
+  main > .transaction-list,
+  main > .mini-summary {
+    min-width: 0;
+  }
+
+  main > .community-tools {
+    min-width: 0;
+  }
+
+  .extra-menu-grid,
+  .extra-menu-grid.expanded {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .bottom-nav {
+    width: 100% !important;
+    max-width: none !important;
+    left: 0 !important;
+    transform: none !important;
+    border-radius: 0 !important;
+    bottom: 0 !important;
+  }
+}
+
+@media screen and (min-width: 1500px) {
+  main {
+    padding-left: 72px !important;
+    padding-right: 72px !important;
+    gap: 24px;
+  }
+  .extra-menu-grid,
+  .extra-menu-grid.expanded {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Akhir patch full-screen desktop */
